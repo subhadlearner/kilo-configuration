@@ -12,6 +12,74 @@ This command does not own intended product behavior and does not perform broad r
 
 Load and follow the global `diagnosing-bugs` skill.
 
+## How the User Should Invoke This Command
+
+The user should provide the symptom and whatever evidence is already known. They do not need to identify the root cause.
+
+Prefer including:
+
+- what is going wrong
+- what was expected instead
+- where it happens
+- whether it is intermittent or deterministic
+- any known reproduction steps
+- relevant error/log text with secrets removed
+- a related spec, issue, endpoint, event, test, or recent change when known
+
+Example — concurrency/race issue:
+
+```text
+/diagnose
+
+We have a concurrency bug in the create-customer flow.
+
+Observed:
+Three POST requests arriving almost simultaneously sometimes create three different customer partition keys even though only one customer should be created.
+
+Expected:
+All concurrent requests for the same logical customer should converge on one record according to the existing specification.
+
+Environment:
+.NET API using DynamoDB.
+
+Known clue:
+Each request appears to perform a read/check first, and all three can observe "not found" before writing.
+
+Please do not jump straight to a fix.
+First build the tightest reproducible test or harness for the exact race, minimize it, generate falsifiable hypotheses, and establish the root cause.
+```
+
+Example — intermittent integration failure:
+
+```text
+/diagnose
+
+Our integration test for order submission fails around 1 in 20 runs.
+
+Observed:
+The API returns 202, but the expected downstream event is occasionally not visible before the test times out.
+
+Expected:
+The event should be observable within the contractually defined timeout.
+
+I do not know whether the problem is the application, test synchronization, queue/eventual consistency, or environment.
+
+Use the existing spec and repository to establish expected behavior.
+Build a red-capable repro before proposing a fix.
+```
+
+Example — minimal invocation:
+
+```text
+/diagnose
+
+GET /orders/{id} occasionally returns stale status for several seconds after an update.
+Expected behavior is defined in SPEC-014.
+Please reproduce and establish the root cause before /fix.
+```
+
+If the user provides incomplete context, first inspect the repository and relevant artifacts. Ask only for evidence or environment access that cannot be obtained locally.
+
 ## Stage 1 — Establish the Symptom Contract
 
 Capture:
