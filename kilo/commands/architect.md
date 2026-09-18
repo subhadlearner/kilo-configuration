@@ -455,6 +455,34 @@ These values must come from architecture decisions.
 
 `/project-init` must not have to choose them.
 
+## Risk-Triggered Adversarial Gate
+
+Before declaring `ARCHITECTURE_READY`, determine whether the draft contains a high-risk or hard-to-reverse decision.
+
+Trigger the adversarial gate for decisions involving, where applicable:
+
+- authentication/authorization or IAM trust
+- destructive migrations or data-loss risk
+- concurrency, idempotency, ordering, or distributed consistency
+- sensitive/public API or event-contract compatibility
+- security-sensitive networking
+- financial or irreversible business behavior
+- backup/recovery guarantees
+- high-lock-in infrastructure or major irreversible cost commitments
+
+For triggered decisions:
+
+1. extract the smallest decision artifact and the requirements/invariants it must satisfy
+2. delegate to the `adversary` subagent with artifact + contract only
+3. do not send the decision author's rationale or preferred conclusion
+4. reconcile every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
+5. revise the architecture/ADR when a finding is valid and actionable
+6. run at most two adversarial cycles on materially changed drafts
+
+Do not invoke the adversary for ordinary low-risk choices merely to add ceremony.
+
+If a substantive high-risk finding remains unresolved after two cycles, do not declare the architecture ready. Resolve it in architecture, obtain the required user decision, or use the existing Opus escalation policy when appropriate.
+
 ## Stage 11 — Architecture Completeness Check
 
 Before finishing, confirm:
@@ -470,6 +498,7 @@ Before finishing, confirm:
 - test tooling is defined
 - CI/CD approach is defined
 - unresolved decisions are clearly identified
+- every triggered high-risk decision has either completed adversarial reconciliation or is explicitly blocking readiness
 
 Do not claim architecture is implementation-ready when required technology decisions remain unresolved.
 
