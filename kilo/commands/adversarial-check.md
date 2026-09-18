@@ -13,6 +13,52 @@ It does not become the decision authority.
 
 Load the global `adversarial-check` skill.
 
+## How the User Should Invoke This Command
+
+The user should identify the artifact or decision they want challenged and, when useful, the risk they are particularly concerned about.
+
+The user does not need to construct the artifact/contract extraction manually; the planner should derive it from the repository.
+
+Example — normal/default adversary:
+
+```text
+/adversarial-check
+
+Review the authentication and authorization design in the current architecture.
+
+Focus especially on:
+- privilege escalation
+- tenant isolation
+- token/session failure modes
+- operational recovery
+
+Use the normal adversarial path.
+```
+
+Example — concurrency/data-integrity decision:
+
+```text
+/adversarial-check
+
+Challenge the DynamoDB idempotency and concurrency design in ADR-007 and the related architecture section.
+
+Try to find any sequence of concurrent requests, retries, or duplicate events that can violate the stated uniqueness/data-integrity guarantees.
+```
+
+Example — user-directed Opus:
+
+```text
+/adversarial-check
+
+Use Opus directly for this review.
+
+Review the production cross-account IAM and event-ingestion architecture in ADR-011 and the current architecture document.
+
+I want a premium fresh-context challenge focused on trust boundaries, confused-deputy risks, privilege escalation, failure recovery, and assumptions that could create a large production blast radius.
+```
+
+The last example is an explicit user authorization for that specific Opus adversarial invocation. Do not require a prior DeepSeek pass or an additional justification.
+
 ## Stage 1 — Select the Reviewable Claim
 
 Identify the smallest artifact that carries the high-risk decision:
