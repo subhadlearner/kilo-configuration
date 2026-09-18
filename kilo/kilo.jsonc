@@ -47,12 +47,17 @@
       "adversary-opus": "ask",
       "code-reviewer": "allow",
       "pre-reviewer": "allow",
-      "adversary-sonnet": "ask"
+      "adversary-sonnet": "ask",
+      "planning-worker": "allow",
+      "adversary-flex": "allow"
     },
     "skill": "ask",
     "websearch": "ask",
     "webfetch": "ask",
     "todoread": "allow",
     "todowrite": "ask"
+  },
+  "experimental": {
+    "task_model_selection": true
   }
 }
