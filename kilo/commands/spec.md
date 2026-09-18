@@ -276,7 +276,7 @@ For each triggered specification:
 
 1. extract the behavior/contract, invariants, acceptance criteria, and relevant architecture constraints
 2. if the user explicitly requested Claude Sonnet, delegate directly to `adversary-sonnet`; the request authorizes that specific paid invocation and no prior DeepSeek pass or Sol justification is required
-3. if the user explicitly requested Claude Opus, delegate directly to `adversary-opus`; the request authorizes that specific premium invocation and no prior DeepSeek/Sonnet pass or Sol justification is required
+3. if the user explicitly requested Claude Opus, delegate directly to `adversary-opus`; the request authorizes that specific premium invocation and no prior DeepSeek/Sol pass or Sol justification is required
 4. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) without the spec author's rationale
 5. the GPT-5.6 Sol planner reconciles findings against the approved PRD/architecture
 6. correct the specification when a finding exposes a real ambiguity, missing failure case, or unverifiable acceptance criterion
