@@ -51,11 +51,19 @@ Two distinct Opus escalation paths exist:
 1. `architect` — resolves an unusually high-risk architecture decision that normal Sonnet analysis cannot settle.
 2. `adversary-opus` — provides a premium independent second opinion after the default DeepSeek `adversary` has run.
 
-Use `adversary-opus` only for rare critical decisions that are hard to reverse, have substantial security/data-integrity/blast-radius consequences, or remain materially disputed after the default adversarial pass.
+Use `adversary-opus` automatically only as an escalation for rare critical decisions that are hard to reverse, have substantial security/data-integrity/blast-radius consequences, or remain materially disputed after the default adversarial pass.
 
-Do not invoke either Opus path for routine work.
+A user may also explicitly request an Opus adversarial review for any architecture/specification/design artifact. When the user explicitly requests Opus for that review:
 
-Ask for explicit user approval before every Opus invocation.
+- treat the request itself as authorization for that specific Opus invocation
+- invoke `adversary-opus` directly
+- do not require a prior DeepSeek adversarial pass
+- do not require Sonnet to justify why Opus is warranted
+- do not silently add a second DeepSeek adversarial pass unless the user asks
+
+Do not invoke either Opus path for routine work on the agent's own initiative.
+
+When Opus is agent-proposed rather than user-requested, ask for explicit user approval before every invocation.
 
 ## Constraints
 
