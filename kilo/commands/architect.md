@@ -473,11 +473,35 @@ Trigger the adversarial gate for decisions involving, where applicable:
 For triggered decisions:
 
 1. extract the smallest decision artifact and the requirements/invariants it must satisfy
-2. delegate to the `adversary` subagent with artifact + contract only
+2. delegate first to the default `adversary` subagent (DeepSeek Flash) with artifact + contract only
 3. do not send the decision author's rationale or preferred conclusion
 4. reconcile every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
 5. revise the architecture/ADR when a finding is valid and actionable
-6. run at most two adversarial cycles on materially changed drafts
+6. run at most two default DeepSeek adversarial cycles, and only when the draft materially changed
+
+### Rare critical Opus adversarial escalation
+
+After the default DeepSeek adversarial pass, consider `adversary-opus` only if the decision is both material and unusually critical, such as:
+
+- broad authentication/authorization or cross-account IAM trust
+- destructive/irreversible migration or serious data-loss/corruption risk
+- distributed consistency/concurrency/idempotency guarantees with high blast radius
+- public/external contracts that are extremely expensive to reverse
+- recovery/restore decisions with material RTO/RPO consequences
+- security-sensitive infrastructure/networking with significant production blast radius
+- major irreversible platform lock-in or recurring-cost exposure
+- materially conflicting findings that remain unresolved after Sonnet reconciles the DeepSeek pass
+
+Do not invoke Opus automatically.
+
+Before invoking `adversary-opus`:
+
+1. explain why premium escalation is justified
+2. ask for explicit user approval
+3. after approval, send artifact + contract + only unresolved material DeepSeek findings
+4. reconcile the Opus result as additional evidence, not authority
+
+If Opus is not justified or not approved, continue with the bounded DeepSeek/Sonnet process.
 
 Do not invoke the adversary for ordinary low-risk choices merely to add ceremony.
 
