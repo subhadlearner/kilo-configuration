@@ -3,7 +3,7 @@ description: Implements approved specifications and writes production-grade test
 mode: primary
 model: deepseek/deepseek-flash
 color: "#2563EB"
-steps: 40
+steps: 75
 permission:
   read: allow
   glob: allow
