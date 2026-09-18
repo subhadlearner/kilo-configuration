@@ -13,9 +13,9 @@ It does not become the decision authority.
 
 Load the global `adversarial-check` skill.
 
-## Optional User Model Selection
+## Optional User Adversary Model Selection
 
-The user may choose the model for this workflow in natural language.
+Because this command exists specifically to run an adversarial review, a model phrase in this command selects the **adversary model**.
 
 Examples:
 
@@ -39,12 +39,13 @@ Aliases resolve as:
 - Opus → Claude Opus 5
 - DeepSeek → DeepSeek V4.1 Flash
 
-If the requested model differs from the current planner model, route the substantive work through the model-selectable planning worker using the explicit per-task model override.
+If the user explicitly selects a model, delegate the fresh-context challenge to `adversary-flex` using Kilo's explicit per-task model override.
 
-The user's model choice changes only the model. It does not change this workflow's role, authority, permissions, acceptance criteria, or safety rules.
+If no model is selected, use the default DeepSeek `adversary`.
 
-If the requested model is unavailable, stop clearly rather than silently substituting another model.
+The top-level planner only extracts the artifact/contract and reconciles the result. It must not reinterpret the requested adversary model as its own workflow-model selection.
 
+If the requested adversary model is unavailable, stop clearly rather than silently substituting another model.
 
 ## How the User Should Invoke This Command
 
@@ -123,40 +124,24 @@ Do not include the author's preferred conclusion or reasoning narrative in the a
 
 ## Stage 3 — Select Adversarial Model
 
-There are three valid entry modes.
+### Explicit user selection
 
-### Mode A — Default
+When the user explicitly selects an adversary model:
 
-When the user did not request a specific paid Claude model:
+1. map the user's alias to the exact supported model
+2. delegate to `adversary-flex` with that explicit per-task model override
+3. treat the user's request as authorization for that specific model invocation
+4. do not run the default DeepSeek adversary first
+5. do not add another adversary unless the user asks
 
-- delegate first to the `adversary` subagent (DeepSeek Flash)
-- treat DeepSeek as the default cost-controlled fresh-context adversary
-- the owning GPT-5.6 Sol planner reconciles the findings
-- do not start with Claude automatically
+### Default
 
-### Mode B — User-directed Sonnet
+When the user does not select a model:
 
-When the user explicitly asks for Claude Sonnet for this adversarial review:
+- delegate to the default `adversary` subagent (DeepSeek Flash)
+- treat DeepSeek as the cost-controlled fresh-context adversary
 
-- the user's request authorizes this specific paid invocation
-- delegate directly to `adversary-sonnet`
-- do not require a prior DeepSeek pass
-- do not require Sol to justify the user's model choice
-- do not invoke DeepSeek or Opus unless the user explicitly asks
-
-Use this when the user wants a strong independent model-family second opinion without paying Opus rates.
-
-### Mode C — User-directed Opus
-
-When the user explicitly asks for Claude Opus for this adversarial review:
-
-- the user's request authorizes this specific premium invocation
-- delegate directly to `adversary-opus`
-- do not require a prior DeepSeek or Sonnet pass
-- do not require Sol to justify why Opus is warranted
-- do not invoke another adversarial model unless the user explicitly asks
-
-In every mode, the reviewer must find ways the artifact can fail the contract rather than validate the author's confidence.
+In every case, the adversary must try to find ways the artifact can fail its contract rather than validate the author's confidence.
 
 ## Stage 4 — Reconcile Findings
 
@@ -177,7 +162,7 @@ For `ACCEPTED_TRADEOFF`, document the consequence and why it is accepted.
 
 This stage applies only when Stage 3 used the default DeepSeek path.
 
-After the GPT-5.6 Sol planner reconciles the DeepSeek findings:
+After the owning adversarial-check orchestrator reconciles the DeepSeek findings:
 
 ### Sonnet escalation
 
@@ -225,7 +210,7 @@ The approval/justification sequence is not required when the user explicitly sel
 
 When the default DeepSeek path was used and no Opus escalation occurred, one additional DeepSeek adversarial pass may be run only when the artifact changed materially.
 
-When a user-directed Sonnet or Opus path was used, do not add a DeepSeek pass automatically.
+When a user-directed adversary path was used, do not add a DeepSeek pass automatically.
 
 Do not exceed two default adversarial cycles automatically.
 
