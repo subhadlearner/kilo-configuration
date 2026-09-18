@@ -1,7 +1,7 @@
 ---
 description: Decompose an approved architecture into independently implementable specifications
 agent: planner
-model: anthropic/claude-sonnet-5
+model: openai/gpt-5.6-sol
 ---
 
 # Specification Workflow
