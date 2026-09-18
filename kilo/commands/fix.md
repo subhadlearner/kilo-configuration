@@ -21,6 +21,7 @@ Use this workflow after any of the following:
 - `/verify` returns `NOT_DONE`
 - pre-review returns `CHANGES_REQUIRED`
 - senior review returns `REQUEST CHANGES`
+- `/diagnose` returns `DIAGNOSIS_READY` for a defect whose intended behavior is already established
 
 The goal is to:
 
@@ -40,12 +41,13 @@ Read only the minimum context required to repair the blocker.
 
 Use, in priority order:
 
-1. latest verification or review result
-2. requested specification
-3. relevant project-level `AGENTS.md`
-4. relevant source files
-5. relevant tests
-6. relevant architecture or ADRs only when needed
+1. latest verification, review, or diagnosis result
+2. requested specification when one governs the change
+3. established behavior/contract when repairing an existing defect without a dedicated spec
+4. relevant project-level `AGENTS.md`
+5. relevant source files
+6. relevant tests
+7. relevant architecture or ADRs only when needed
 
 Do not scan unrelated parts of the repository.
 
@@ -80,14 +82,19 @@ Examples:
 
 ### Root-Cause Debugging
 
-Use debugger-style investigation when:
+Load and apply the `diagnosing-bugs` skill when:
 
 - runtime behavior differs from expected behavior
 - failure is intermittent
 - concurrency/race issues are suspected
 - serialization or dependency-injection failures occur
 - integration behavior is unclear
+- performance regressed without an obvious cause
 - a prior repair attempt did not resolve the same blocker
+
+For these failures, establish a red-capable reproduction for the exact symptom before broad edits. Minimize it, form falsifiable hypotheses, test one variable at a time, and create a regression test at the correct seam when possible.
+
+If a usable feedback loop cannot be built because required environment access or evidence is missing, stop and request the minimum artifact/access needed instead of guessing.
 
 ### Architecture or Specification Conflict
 
@@ -127,11 +134,15 @@ When locally repairable:
 
 ## Stage 5 — Test Integrity
 
+Never make a blocker disappear by weakening the gate that detected it.
+
 Never:
 
 - delete failing tests
-- skip failing tests without approved justification
+- skip or quarantine failing required tests without approved justification
 - weaken assertions
+- lower required coverage/performance/security thresholds
+- add warning/lint/analyzer suppressions solely to silence the failure
 - alter expected behavior merely to make a test pass
 - disable lint rules solely to pass verification
 - suppress compiler/static-analysis failures without fixing the underlying issue
