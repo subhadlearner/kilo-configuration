@@ -33,6 +33,10 @@ Do not let a global skill silently replace an approved technology choice.
 | aws-iam | AWS-grounded local adaptation | IAM policy, role, trust, boundary, and cross-account correctness |
 | amazon-dynamodb | AWS-grounded local adaptation | DynamoDB access-pattern-led data modeling and operations |
 | azure-architecture | Microsoft-grounded local adaptation | Azure architecture, reliability, security, operations, and cost |
+| requirements-grilling | Addy/Matt-grounded local adaptation | Dependency-aware product/design interrogation before PRD |
+| tdd | Addy/Matt-grounded local adaptation | Behavioral red → green vertical implementation |
+| diagnosing-bugs | Matt-grounded local adaptation | Tight feedback-loop-first root-cause diagnosis |
+| adversarial-check | Addy-grounded local adaptation | Fresh-context challenge of high-risk decisions |
 
 ## Skill governance
 
