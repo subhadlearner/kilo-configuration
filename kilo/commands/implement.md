@@ -189,7 +189,7 @@ Do not write a large imagined test suite up front.
 
 If the specification states `TDD: NOT_APPLICABLE`, follow the reason given and still implement all required deterministic tests/checks.
 
-If behavior-bearing code has no TDD decision and a stable test seam is obvious, prefer TDD. If the correct seam is unclear, stop rather than inventing brittle private-method tests.
+If behavior-bearing code has no TDD decision and a stable test seam is obvious, prefer TDD. If the specification explicitly requires TDD but does not define a usable seam, return `IMPLEMENTATION_BLOCKED` with owner `SPECIFICATION` and next command `/spec` rather than inventing brittle private-method tests. If TDD was not required, proceed with the specification's normal testing requirements.
 
 ## Stage 8 — Implement the Specification
 
