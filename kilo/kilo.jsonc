@@ -43,6 +43,7 @@
     "edit": "ask",
     "task": {
       "*": "deny",
+      "adversary": "allow",
       "code-reviewer": "allow",
       "pre-reviewer": "allow"
     },
