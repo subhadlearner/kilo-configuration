@@ -194,6 +194,8 @@ Use Claude Sonnet for discovery/grilling orchestration, planning, architecture, 
 
 Default adversary: DeepSeek Flash.
 
-Escalation adversary: Claude Opus, only for rare critical decisions after a DeepSeek adversarial pass and only with explicit user approval.
+Agent-proposed escalation adversary: Claude Opus, only for rare critical decisions after a DeepSeek adversarial pass and only with explicit user approval.
 
-Use Claude Opus for architecture authority or adversarial escalation only when the decision is unusually high-risk, hard to reverse, security/data-integrity sensitive, or materially unresolved.
+User-directed premium override: the user may explicitly request Claude Opus for an architecture, specification, or other adversarial review. That request authorizes the specific Opus invocation directly; a prior DeepSeek adversarial pass and Sonnet justification are not required. Do not add a DeepSeek adversarial pass unless the user asks for both.
+
+Use Claude Opus on the agent's own initiative only when the decision is unusually high-risk, hard to reverse, security/data-integrity sensitive, or materially unresolved.
