@@ -207,7 +207,18 @@ Every acceptance criterion must be objectively verifiable.
 
 ### Testing Requirements
 
-Define applicable:
+Define the observable test seams before listing individual tests.
+
+For each important behavior identify the highest stable public/contract boundary that can prove it, such as:
+
+- HTTP/API boundary
+- message/event handler contract
+- domain/application service boundary
+- persistence adapter contract
+- CLI boundary
+- browser/user journey
+
+Then define applicable:
 
 - unit tests
 - integration tests
@@ -216,6 +227,12 @@ Define applicable:
 - negative tests
 - boundary tests
 - security tests
+
+State `TDD: APPLICABLE` when behavior can be developed safely in red → green vertical slices against stable seams.
+
+State `TDD: NOT_APPLICABLE` with a short reason for work such as pure documentation, mechanical configuration, generated scaffolding, or cases where a meaningful failing behavioral test cannot precede implementation.
+
+Do not require tests against private implementation details merely to increase coverage.
 
 ### Verification Requirements
 
@@ -242,6 +259,33 @@ When parallel implementation is safe:
 - recommend separate branches/worktrees
 
 Do not force parallelism where it increases coordination risk.
+
+## Risk-Triggered Adversarial Specification Check
+
+Before returning `SPEC_READY`, adversarially check any specification whose correctness depends materially on:
+
+- security/auth/IAM
+- concurrency, ordering, idempotency, transactions, or consistency
+- destructive migration or data retention
+- irreversible external side effects
+- public API/event compatibility
+- financial logic
+- recovery/rollback guarantees
+
+For each triggered specification:
+
+1. extract the behavior/contract, invariants, acceptance criteria, and relevant architecture constraints
+2. if the user explicitly requested Opus for this specification review, delegate directly to `adversary-opus`; the request authorizes that specific invocation and no prior DeepSeek pass or Sonnet justification is required
+3. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) without the spec author's rationale
+4. reconcile findings against the approved PRD/architecture
+5. correct the specification when a finding exposes a real ambiguity, missing failure case, or unverifiable acceptance criterion
+6. when using the default path, stop after at most two materially changed DeepSeek adversarial cycles; when using user-directed Opus, do not add DeepSeek automatically
+
+When the user did not explicitly choose Opus, use `adversary-opus` only for a rare critical specification whose residual risk remains unusually high after the DeepSeek pass—for example irreversible migration/data integrity, auth/IAM, public contracts, or distributed consistency with major blast radius.
+
+Agent-proposed Opus escalation requires explicit user approval before invocation. Pass only the artifact, contract, and unresolved material default-adversary findings. Treat the Opus result as evidence, not authority.
+
+If a material issue actually belongs to product or architecture authority, return `SPEC_BLOCKED` and route upstream rather than silently solving it in the specification.
 
 ## Stage 6 — Traceability
 

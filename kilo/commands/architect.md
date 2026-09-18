@@ -455,6 +455,74 @@ These values must come from architecture decisions.
 
 `/project-init` must not have to choose them.
 
+## Risk-Triggered Adversarial Gate
+
+Before declaring `ARCHITECTURE_READY`, determine whether the draft contains a high-risk or hard-to-reverse decision.
+
+Trigger the adversarial gate for decisions involving, where applicable:
+
+- authentication/authorization or IAM trust
+- destructive migrations or data-loss risk
+- concurrency, idempotency, ordering, or distributed consistency
+- sensitive/public API or event-contract compatibility
+- security-sensitive networking
+- financial or irreversible business behavior
+- backup/recovery guarantees
+- high-lock-in infrastructure or major irreversible cost commitments
+
+For triggered decisions:
+
+1. extract the smallest decision artifact and the requirements/invariants it must satisfy
+2. if the user explicitly requested Opus for this architecture review, delegate directly to `adversary-opus`; the user request is authorization for that specific invocation, no DeepSeek pass or Sonnet justification is required
+3. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) with artifact + contract only
+4. do not send the decision author's rationale or preferred conclusion
+5. reconcile every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
+6. revise the architecture/ADR when a finding is valid and actionable
+7. when using the default path, run at most two DeepSeek adversarial cycles and only when the draft materially changed; when using user-directed Opus, do not add DeepSeek automatically
+
+### Opus adversarial paths
+
+#### User-directed Opus
+
+The user may explicitly request an Opus adversarial review of the architecture or a named architecture decision.
+
+When explicitly requested:
+
+- invoke `adversary-opus` directly
+- treat the request as approval for that specific invocation
+- skip the default DeepSeek adversarial pass unless the user asks for both
+- do not require Sonnet to justify the use of Opus
+
+#### Agent-proposed rare critical escalation
+
+When the user did not request Opus, consider `adversary-opus` after the default DeepSeek adversarial pass only if the decision is both material and unusually critical, such as:
+
+- broad authentication/authorization or cross-account IAM trust
+- destructive/irreversible migration or serious data-loss/corruption risk
+- distributed consistency/concurrency/idempotency guarantees with high blast radius
+- public/external contracts that are extremely expensive to reverse
+- recovery/restore decisions with material RTO/RPO consequences
+- security-sensitive infrastructure/networking with significant production blast radius
+- major irreversible platform lock-in or recurring-cost exposure
+- materially conflicting findings that remain unresolved after Sonnet reconciles the DeepSeek pass
+
+Do not invoke Opus automatically when the user has not requested it.
+
+For an agent-proposed escalation:
+
+1. explain why premium escalation is justified
+2. ask for explicit user approval
+3. after approval, send artifact + contract + only unresolved material DeepSeek findings
+4. reconcile the Opus result as additional evidence, not authority
+
+For a user-directed Opus review, steps 1–2 are already satisfied by the user's explicit request.
+
+If agent-proposed Opus is not justified or not approved, continue with the bounded DeepSeek/Sonnet process.
+
+Do not invoke the adversary for ordinary low-risk choices merely to add ceremony.
+
+If a substantive high-risk finding remains unresolved after two cycles, do not declare the architecture ready. Resolve it in architecture, obtain the required user decision, or use the existing Opus escalation policy when appropriate.
+
 ## Stage 11 — Architecture Completeness Check
 
 Before finishing, confirm:
@@ -470,6 +538,7 @@ Before finishing, confirm:
 - test tooling is defined
 - CI/CD approach is defined
 - unresolved decisions are clearly identified
+- every triggered high-risk decision has either completed adversarial reconciliation or is explicitly blocking readiness
 
 Do not claim architecture is implementation-ready when required technology decisions remain unresolved.
 

@@ -255,7 +255,10 @@ Specifically look for:
 - missing boundary or edge cases
 - mocks that bypass the behavior under test
 - weakened assertions
-- tests removed or skipped merely to obtain a passing build
+- tests removed, skipped, or quarantined merely to obtain a passing build
+- coverage/performance/security thresholds lowered merely to obtain a pass
+- warning, lint, analyzer, or static-analysis suppressions introduced solely to silence a gate
+- tests coupled to private implementation details when the specification defines a stable observable seam
 - missing integration tests required by the specification
 - missing E2E tests required by the specification
 - tests that pass without actually validating the requirement

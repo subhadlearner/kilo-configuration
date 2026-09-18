@@ -173,7 +173,25 @@ Avoid:
 - broad repository cleanup
 - architecture changes disguised as implementation
 
-## Stage 7 — Implement the Specification
+## Stage 7 — Select Test-First Mode
+
+Read the specification's testing strategy and test seams.
+
+If the specification states `TDD: APPLICABLE`, load the global `tdd` skill and implement behavior in thin red → green vertical slices:
+
+1. write one failing behavioral test at an approved seam
+2. run it and confirm it fails for the intended missing behavior
+3. implement only enough production code to make that test pass
+4. repeat for the next behavior
+5. refactor only while keeping the suite green
+
+Do not write a large imagined test suite up front.
+
+If the specification states `TDD: NOT_APPLICABLE`, follow the reason given and still implement all required deterministic tests/checks.
+
+If behavior-bearing code has no TDD decision and a stable test seam is obvious, prefer TDD. If the specification explicitly requires TDD but does not define a usable seam, return `IMPLEMENTATION_BLOCKED` with owner `SPECIFICATION` and next command `/spec` rather than inventing brittle private-method tests. If TDD was not required, proceed with the specification's normal testing requirements.
+
+## Stage 8 — Implement the Specification
 
 Implement only the requested specification.
 
@@ -198,7 +216,7 @@ Where applicable:
 - handle retries/idempotency where required
 - use safe concurrency patterns where required
 
-## Stage 8 — Dependencies
+## Stage 9 — Dependencies
 
 Reuse existing dependencies whenever practical.
 
@@ -206,7 +224,7 @@ If implementation requires a new major dependency not covered by the approved de
 
 STOP and request approval.
 
-## Stage 9 — Implement Required Tests
+## Stage 10 — Implement Required Tests
 
 Add the tests required by the specification.
 
@@ -220,9 +238,9 @@ Use the appropriate combination of:
 - boundary tests
 - security tests
 
-Do not weaken existing tests.
+Do not weaken existing tests, assertions, quality thresholds, analyzers, or security gates to obtain a pass.
 
-## Stage 10 — Focused Implementation Validation
+## Stage 11 — Focused Implementation Validation
 
 During implementation, run focused checks as needed.
 
@@ -232,7 +250,7 @@ Do not treat them as final verification.
 
 The authoritative verification workflow is `/verify`.
 
-## Stage 11 — Handle Local Failures
+## Stage 12 — Handle Local Failures
 
 If focused checks fail because of an implementation defect:
 
@@ -244,7 +262,7 @@ If the implementation appears complete, return control to `/verify`.
 
 If `/verify` later returns `NOT_DONE`, repair belongs to `/fix`.
 
-## Stage 12 — Architecture and Specification Guardrail
+## Stage 13 — Architecture and Specification Guardrail
 
 STOP if implementation would require:
 
@@ -265,7 +283,7 @@ Return:
 
 Do not silently redesign the system.
 
-## Stage 13 — Implementation Completion
+## Stage 14 — Implementation Completion
 
 When implementation work for the requested specification is finished:
 

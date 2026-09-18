@@ -254,6 +254,8 @@ For every proposed non-`NOT_REQUIRED` skill ask:
 
 The matrix is an explicit completeness check, not a requirement to maximize the number of skills.
 
+Global workflow skills such as requirements grilling, TDD, diagnosis, and adversarial checking should normally be reported as `ALREADY_AVAILABLE` when relevant. Do not copy them into the project merely to make them visible.
+
 A project may legitimately have many `NOT_REQUIRED` rows when normal project instructions are sufficient.
 
 ## Stage 7 — Search Existing Skills Before Creating New Ones
