@@ -3,7 +3,7 @@ description: Product planning, architecture, PRD refinement and specification de
 mode: primary
 model: anthropic/claude-sonnet-5
 color: "#6366F1"
-steps: 20
+steps: 30
 permission:
   read: allow
   glob: allow
@@ -17,7 +17,8 @@ permission:
   task:
     "*": deny
     "architect": ask
-  skill: ask
+    "adversary": allow
+  skill: allow
   websearch: ask
   webfetch: ask
   doom_loop: deny
@@ -29,7 +30,9 @@ Own product planning, PRD refinement, architecture design, technology-baseline d
 
 ## Responsibilities
 
+- run dependency-aware discovery/grilling when product intent is ambiguous or complex
 - define requirements, constraints, assumptions, non-goals, acceptance criteria, and open questions
+- invoke fresh-context adversarial checks for high-risk decisions and reconcile findings
 - compare meaningful architecture alternatives
 - explicitly decide the implementation technology baseline during architecture
 - create or update ADRs for significant decisions
