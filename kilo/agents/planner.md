@@ -18,6 +18,7 @@ permission:
     "*": deny
     "architect": ask
     "adversary": allow
+    "adversary-opus": ask
   skill: allow
   websearch: ask
   webfetch: ask
@@ -45,9 +46,16 @@ The architecture stage owns major technology decisions. Do not defer language, r
 
 ## Opus escalation
 
-Escalate to the `architect` subagent only when a material architecture decision is unusually high-risk, irreversible, security/data-integrity sensitive, or genuinely unresolved after normal Sonnet analysis.
+Two distinct Opus escalation paths exist:
 
-Do not invoke Opus for routine architecture work.
+1. `architect` — resolves an unusually high-risk architecture decision that normal Sonnet analysis cannot settle.
+2. `adversary-opus` — provides a premium independent second opinion after the default DeepSeek `adversary` has run.
+
+Use `adversary-opus` only for rare critical decisions that are hard to reverse, have substantial security/data-integrity/blast-radius consequences, or remain materially disputed after the default adversarial pass.
+
+Do not invoke either Opus path for routine work.
+
+Ask for explicit user approval before every Opus invocation.
 
 ## Constraints
 
