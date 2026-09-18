@@ -1,0 +1,55 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "model": "deepseek/deepseek-flash",
+  "small_model": "deepseek/deepseek-flash",
+  "agent": {
+    "ask": {
+      "model": "anthropic/claude-sonnet-5"
+    },
+    "code": {
+      "model": "deepseek/deepseek-flash"
+    },
+    "plan": {
+      "model": "anthropic/claude-sonnet-5"
+    },
+    "debug": {
+      "model": "deepseek/deepseek-flash"
+    }
+  },
+  "permission": {
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "bash": {
+      "*": "ask",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "dotnet build*": "allow",
+      "dotnet test*": "allow",
+      "dotnet format --verify-no-changes*": "allow",
+      "pytest*": "allow",
+      "ruff check*": "allow",
+      "npm test*": "allow",
+      "npm run lint*": "allow",
+      "npm run typecheck*": "allow",
+      "npm run build*": "allow",
+      "rm *": "deny",
+      "rmdir *": "deny",
+      "Remove-Item *": "deny",
+      "git reset --hard*": "deny",
+      "git clean*": "deny"
+    },
+    "edit": "ask",
+    "task": {
+      "*": "deny",
+      "code-reviewer": "allow",
+      "pre-reviewer": "allow"
+    },
+    "skill": "ask",
+    "websearch": "ask",
+    "webfetch": "ask",
+    "todoread": "allow",
+    "todowrite": "ask"
+  }
+}

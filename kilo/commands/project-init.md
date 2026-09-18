@@ -1,0 +1,400 @@
+---
+description: Initialize repository instructions, rules, and curated skills from the approved architecture
+agent: code
+model: anthropic/claude-sonnet-5
+---
+
+# Project Initialization Workflow
+
+Initialize the repository for implementation using the approved PRD, architecture, ADRs, and project constraints.
+
+This workflow prepares the repository for implementation.
+
+It does NOT implement application functionality.
+
+## Purpose
+
+The purpose of this workflow is to ensure that the technology stack, repository instructions, developer documentation, project-specific rules, and relevant AI skills are established before implementation begins.
+
+The implementation agent must never be allowed to invent the technology stack simply because repository instructions are incomplete.
+
+## Stage 1 — Load Approved Project Context
+
+Read only the project context required to initialize the repository:
+
+- approved PRD
+- approved architecture
+- relevant ADRs
+- existing project-level `AGENTS.md`
+- existing `README.md`
+- existing `.kilo/rules/`
+- existing `.kilo/skills/`
+- relevant repository configuration
+
+Do not scan unrelated implementation files or unrelated documentation.
+
+## Stage 2 — Determine the Approved Technology Baseline
+
+The technology stack must come from the approved architecture and ADRs.
+
+The architecture stage is the authority for technology decisions.
+
+Extract the approved values for:
+
+- programming language
+- runtime/version
+- application framework
+- API style where relevant
+- database/storage technology
+- cloud provider
+- cloud region where specified
+- infrastructure-as-code technology
+- package/dependency manager
+- unit-test framework
+- integration-test approach
+- E2E-test approach when applicable
+- linting tools
+- formatting tools
+- type-checking/static-analysis tools
+- security-analysis tools where specified
+- deployment approach
+
+Do NOT independently choose or replace any major technology.
+
+Do NOT infer a stack merely because one would be convenient.
+
+If a technology decision required for implementation is missing, conflicting, or materially ambiguous:
+
+STOP.
+
+Return:
+
+`PROJECT_INIT_BLOCKED`
+
+Include:
+
+- the missing decision
+- why implementation depends on it
+- the relevant PRD/architecture/ADR reference
+- the minimum clarification required
+
+Do not continue until the architecture decision is resolved.
+
+## Stage 3 — Update Project AGENTS.md
+
+Update the repository-level `AGENTS.md`.
+
+Preserve relevant existing instructions.
+
+The project-level `AGENTS.md` must describe the actual approved project rather than remaining as an unfilled template.
+
+Populate, where applicable:
+
+### Project Overview
+
+- project purpose
+- important domain context
+- major system responsibilities
+
+### Technology
+
+- language
+- runtime/version
+- framework
+- database
+- cloud provider
+- region
+- IaC technology
+- package manager
+
+### Build and Verification Commands
+
+Provide actual commands for:
+
+- dependency restore/install
+- build
+- unit tests
+- integration tests
+- E2E tests when applicable
+- lint
+- formatting verification
+- type checking/static analysis
+- security/dependency scanning when configured
+
+Commands must correspond to the approved stack.
+
+Do not invent commands for tools that are not part of the project.
+
+### Architecture Constraints
+
+Record only implementation-relevant approved constraints.
+
+### Coding Conventions
+
+Record project-specific coding expectations where known.
+
+Do not invent conventions when no project decision exists.
+
+### Testing Requirements
+
+Record project-specific testing requirements.
+
+### Security Constraints
+
+Record relevant security requirements.
+
+### Cloud and Cost Constraints
+
+Record implementation-relevant cost constraints.
+
+### Deployment Constraints
+
+Record environments, IaC requirements, deployment restrictions, and human approval requirements.
+
+Do not put secrets in `AGENTS.md`.
+
+## Stage 4 — Update README.md
+
+Update the repository-level `README.md`.
+
+The README must accurately describe the current project state.
+
+Include, where applicable:
+
+- project purpose
+- technology stack
+- high-level architecture summary
+- prerequisites
+- local development commands
+- repository structure
+- engineering workflow
+
+Do not claim a feature exists merely because it appears in the PRD or architecture.
+
+Distinguish clearly between:
+
+- implemented functionality
+- planned functionality
+- documentation-only design decisions
+
+## Stage 5 — Configure Project Rules
+
+Review whether project-specific Kilo rules would materially help implementation.
+
+Use:
+
+`.kilo/rules/`
+
+Only create rules that are genuinely relevant.
+
+Do not duplicate information already adequately covered by `AGENTS.md`.
+
+Prefer concise rules containing implementation constraints rather than tutorials.
+
+## Stage 6 — Determine Required Skills
+
+Evaluate whether specialized Agent Skills would materially improve implementation quality for the approved technology stack.
+
+Skills are a curated dependency layer.
+
+Do not create or install skills merely to increase available context.
+
+For each potential skill ask:
+
+- Is the technology actually used by this project?
+- Will this skill materially improve implementation quality?
+- Is the guidance specialized enough to justify a skill?
+- Is equivalent guidance already present in `AGENTS.md` or project rules?
+- Is the source trustworthy?
+
+## Stage 7 — Search Existing Skills Before Creating New Ones
+
+Prefer existing high-quality skills over generating a new generic skill from scratch.
+
+Use this source priority:
+
+1. official/vendor-maintained skill
+2. well-established and actively maintained community skill
+3. project-adapted version of a reputable skill
+4. custom project-specific skill only when necessary
+
+Potential discovery sources include:
+
+- skills.sh
+- official technology-vendor skill repositories
+- reputable open-source Agent Skill collections
+
+Treat third-party skills as untrusted until reviewed.
+
+Before recommending installation, evaluate:
+
+- repository owner/maintainer
+- whether the source is official
+- maintenance activity
+- relevance to the approved stack
+- scope of instructions
+- bundled scripts or executable resources
+- unexpected network or shell behavior
+- overlap with existing project instructions
+
+Do not silently install third-party skills.
+
+## Stage 8 — Skill Approval Gate
+
+When useful third-party skills are found:
+
+- do not install them automatically
+- present the recommended skill set to the user
+- mark each unapproved third-party skill as `RECOMMENDED_NOT_INSTALLED`
+- continue repository initialization unless the approved architecture explicitly makes that skill a required project dependency
+
+For each recommendation provide:
+
+- skill name
+- source
+- purpose
+- why it is useful for this project
+- whether it is official/vendor maintained
+- relevant security or maintenance concern
+- proposed project installation location
+
+A third-party skill recommendation is normally non-blocking.
+
+## Stage 9 — Install Approved Skills
+
+Install a third-party skill only after explicit user approval.
+
+If approval has not been given, leave it uninstalled and report it as `RECOMMENDED_NOT_INSTALLED`.
+
+Prefer:
+
+`.kilo/skills/<skill-name>/SKILL.md`
+
+Keep the number of installed skills small and relevant.
+
+Do not install large skill collections when only one or two skills are required.
+
+## Stage 10 — Create Missing Project-Specific Skills
+
+If no suitable external skill exists for an important project-specific need, create a focused project skill.
+
+Do not duplicate entire vendor documentation.
+
+Do not create a generic technology tutorial.
+
+## Stage 11 — Validate Repository Initialization
+
+Before declaring project initialization complete, verify:
+
+- the technology stack comes from approved architecture/ADRs
+- no major technology was invented during initialization
+- `AGENTS.md` contains the actual project stack
+- `AGENTS.md` contains valid build/test commands where available
+- `README.md` accurately describes the project
+- README does not claim unimplemented functionality
+- project rules are relevant and non-duplicative
+- installed skills are relevant to the approved stack
+- third-party skills were explicitly approved
+- no secrets were introduced
+- implementation agents now have sufficient project context
+
+## Blocked Output Contract
+
+Whenever this workflow cannot safely continue, the blocked response must contain these fields:
+
+### Blocking issue
+
+State exactly what is missing, conflicting, unsafe, or unresolved.
+
+### Owner
+
+Use exactly one of:
+
+- `PRODUCT`
+- `ARCHITECTURE`
+- `PROJECT_INIT`
+- `SPECIFICATION`
+- `REPOSITORY`
+- `USER_APPROVAL`
+
+Choose the owner that must resolve the blocker.
+
+### Why it blocks
+
+Explain why this stage cannot safely continue without the decision or correction.
+
+### Required action
+
+State the minimum action, clarification, or correction required to unblock the workflow.
+
+### Next command
+
+State the exact next workflow command to run after the blocker is resolved.
+
+Use only one of:
+
+- `/prd`
+- `/architect`
+- `/project-init`
+- `/spec`
+- `/implement`
+
+If a user clarification or repository cleanup must happen first, say so in `Required action`, then name the command to rerun in `Next command`.
+
+The final line must be the workflow's blocked status token and nothing may appear after it.
+
+## Output
+
+Report concisely:
+
+### Technology Baseline
+
+- language/runtime
+- framework
+- database/storage
+- cloud
+- IaC
+- testing stack
+
+### Files Updated
+
+List:
+
+- `AGENTS.md`
+- `README.md`
+- relevant `.kilo/rules/*`
+- relevant `.kilo/skills/*`
+
+### Skills
+
+For each skill state:
+
+- installed
+- already present
+- custom-created
+- declined
+- not required
+
+### Remaining Decisions
+
+List unresolved non-blocking decisions.
+
+If a blocking technology decision is unresolved, use the Blocked Output Contract.
+
+Routing rules:
+
+- use owner `ARCHITECTURE` and next command `/architect` when the approved architecture or ADRs are missing or conflict on a required technology decision
+- use owner `PROJECT_INIT` and next command `/project-init` when the blocker is local repository initialization state that this workflow can safely resolve after a user/repository action
+- use owner `USER_APPROVAL` and next command `/project-init` when explicit approval is required for a project-initialization action
+
+Do not proceed to `/spec` or `/implement`.
+
+Finish with exactly:
+
+`PROJECT_INIT_BLOCKED`
+
+If initialization is successful, finish with exactly:
+
+`PROJECT_INIT_READY`
+
+Do not output anything after the final status token.

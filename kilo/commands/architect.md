@@ -1,0 +1,555 @@
+---
+description: Design the production architecture and lock the technology baseline
+agent: planner
+model: anthropic/claude-sonnet-5
+---
+
+# Production Architecture Workflow
+
+Design the production architecture for the approved PRD.
+
+The architecture stage owns major technology decisions.
+
+Do not implement application code.
+
+The output must provide enough approved technical detail for `/project-init`,
+`/spec`, and `/implement` to proceed without inventing the technology stack.
+
+## Stage 1 — Load Architecture Context
+
+Read:
+
+- the approved PRD
+- relevant existing architecture when modifying an existing system
+- relevant existing ADRs
+- project-level constraints from `AGENTS.md` when available
+
+Do not inspect unrelated implementation details unless required to understand an existing system.
+
+## Stage 2 — Identify Constraints
+
+Extract and classify relevant constraints.
+
+Include, where applicable:
+
+- functional constraints
+- scale/workload
+- reliability
+- availability
+- performance
+- security
+- privacy/compliance
+- data residency
+- observability
+- deployment
+- operational burden
+- team capabilities
+- cloud/provider constraints
+- cost limits
+- existing technology constraints
+- compatibility requirements
+
+Do not invent constraints that are absent from the PRD.
+
+Clearly distinguish:
+
+- explicit requirements
+- architecture assumptions
+- unresolved decisions
+
+## Stage 3 — Evaluate Architecture Options
+
+When meaningful, identify at least two viable architecture approaches.
+
+Compare them on:
+
+- simplicity
+- reliability
+- security
+- scalability
+- maintainability
+- operational burden
+- implementation complexity
+- deployment complexity
+- estimated cloud cost
+- fixed monthly cost
+- variable cost behavior
+- vendor/service dependencies
+- fit with stated project constraints
+
+Do not manufacture alternatives when only one approach is realistically viable.
+
+Select the architecture that best satisfies the approved requirements and constraints.
+
+Document the reasons for significant decisions.
+
+## Stage 4 — Establish the Technology Baseline
+
+The architecture must explicitly decide the technology baseline required for implementation.
+
+Do not leave implementation agents to choose these later.
+
+For a new project, determine and document, where applicable:
+
+### Application Stack
+
+- programming language
+- language version
+- runtime and version
+- application framework
+- framework version or major version policy
+- API style
+- serialization approach
+- dependency injection approach when relevant
+- package/dependency manager
+
+### Persistence Stack
+
+- database/storage technology
+- data-access library or SDK strategy
+- schema/model strategy
+- migration strategy when applicable
+- consistency model where relevant
+
+### Cloud Runtime
+
+- cloud provider
+- region
+- compute/runtime service
+- CPU architecture where relevant
+- deployment packaging model
+- networking model
+- secrets/configuration storage
+
+### Infrastructure as Code
+
+- IaC technology
+- IaC language when applicable
+- deployment organization
+- environment strategy
+
+### Testing Stack
+
+Explicitly select, where applicable:
+
+- unit-test framework
+- mocking/test-double framework
+- integration-test framework/approach
+- E2E-test framework/approach
+- contract-test approach
+- local cloud-service emulation strategy, if any
+
+### Code Quality Tooling
+
+Explicitly select, where applicable:
+
+- formatter
+- linter
+- compiler/static analysis
+- type checking
+- code-quality analyzers
+- security/dependency scanning
+- secret scanning
+
+### Local Development
+
+Determine:
+
+- required SDK/runtime versions
+- package manager
+- local execution approach
+- environment/configuration approach
+- whether Docker is required
+- whether cloud credentials are required for local development
+
+### CI/CD Baseline
+
+Determine:
+
+- CI provider
+- build strategy
+- test gates
+- security gates
+- IaC validation
+- artifact packaging
+- deployment approach
+- production approval model
+
+Do not choose tools merely to fill every category.
+
+Use `Not Applicable` when a category genuinely does not apply.
+
+## Stage 5 — Technology Decision Rules
+
+Technology choices must be justified by project requirements.
+
+Prefer:
+
+- mature supported technology
+- minimal operational burden
+- minimal fixed cloud cost
+- strong ecosystem support
+- straightforward local development
+- production-safe defaults
+- technologies appropriate to the expected scale
+
+Avoid:
+
+- unnecessary frameworks
+- unnecessary infrastructure
+- speculative scalability
+- multiple languages without a strong reason
+- redundant tools
+- technologies requiring always-on infrastructure when requirements do not justify it
+
+When the PRD constrains a technology, respect that constraint unless it creates a material technical contradiction.
+
+## Stage 6 — Technology Completeness Gate
+
+Before finalizing the architecture, verify that `/project-init` could determine the implementation stack without guessing.
+
+At minimum, a greenfield application architecture must establish:
+
+- application language
+- language/runtime version
+- application framework or explicit frameworkless approach
+- package manager
+- cloud/runtime platform
+- database/storage technology
+- IaC technology
+- unit-test framework
+- integration-test approach
+- formatting/lint/static-analysis approach
+- CI/CD approach
+
+If one of these decisions is genuinely unresolved and required for implementation:
+
+do not silently omit it.
+
+Report:
+
+`ARCHITECTURE_BLOCKED`
+
+Explain:
+
+- the unresolved decision
+- viable choices
+- relevant trade-offs
+- why implementation cannot safely choose it later
+- what input is required to resolve it
+
+Do not delegate major technology selection to `/project-init` or `/implement`.
+
+## Stage 7 — Architecture Design
+
+Produce the production architecture.
+
+Include:
+
+### Architecture Overview
+
+Describe:
+
+- system topology
+- major boundaries
+- responsibility separation
+- critical request/data paths
+
+### Major Components
+
+For every major component identify:
+
+- responsibility
+- technology/service
+- key configuration
+- dependencies
+- relevant scale or reliability considerations
+
+### Data Model
+
+Where applicable define:
+
+- entities/resources
+- keys/indexes
+- major access patterns
+- consistency requirements
+- retention/TTL
+- migration considerations
+
+### Data Flow
+
+Describe important flows such as:
+
+- writes
+- reads
+- authentication
+- authorization
+- asynchronous flows
+- failure flows
+
+### Security Model
+
+Cover, where relevant:
+
+- authentication
+- authorization
+- secrets
+- encryption
+- network boundaries
+- least privilege
+- input validation
+- sensitive data/logging
+- supply-chain controls
+- abuse/throttling
+
+### Observability
+
+Define:
+
+- logs
+- metrics
+- traces
+- alarms
+- dashboards
+- retention
+- correlation/request IDs
+- cost controls
+
+### Deployment Strategy
+
+Define:
+
+- environments
+- IaC
+- CI/CD
+- release strategy
+- rollback
+- configuration
+- secrets
+- migrations
+- production approval
+
+### Failure Modes
+
+Identify material failures and define:
+
+- detection
+- behavior
+- mitigation
+- recovery
+
+### Recovery Strategy
+
+Define:
+
+- backup/recovery
+- RTO/RPO where required
+- restore process
+- deployment rollback
+- infrastructure reconstruction
+
+### Cost Characteristics
+
+Estimate:
+
+- fixed recurring cost
+- important usage-based cost
+- primary cost drivers
+- cost risks
+- optimization levers
+
+Use assumptions explicitly.
+
+Do not imply precision where pricing depends on uncertain traffic.
+
+## Stage 8 — ADRs
+
+Create ADRs for significant technology and architecture decisions.
+
+Typical ADR candidates include:
+
+- application language/runtime
+- application framework when materially consequential
+- compute model
+- ingress/API model
+- persistence technology
+- authentication strategy
+- asynchronous messaging strategy
+- IaC technology
+- deployment approach
+- observability strategy
+
+Do not create an ADR for trivial implementation details.
+
+Store architecture documentation under:
+
+`docs/architecture/`
+
+Store ADRs under:
+
+`docs/adr/`
+
+## Stage 9 — Technology Baseline Summary
+
+Every architecture document must contain a dedicated section named:
+
+`Technology Baseline`
+
+Use a table similar to:
+
+| Area | Decision | Version / Policy | Rationale |
+| --- | --- | --- | --- |
+| Application Language | | | |
+| Runtime | | | |
+| Framework | | | |
+| Package Manager | | | |
+| Database / Storage | | | |
+| Data Access | | | |
+| Cloud | | | |
+| Region | | | |
+| Compute | | | |
+| IaC | | | |
+| IaC Language | | | |
+| Unit Testing | | | |
+| Integration Testing | | | |
+| E2E Testing | | | |
+| Formatting | | | |
+| Lint / Static Analysis | | | |
+| Security / Dependency Scan | | | |
+| CI/CD | | | |
+
+Use `Not Applicable` where appropriate.
+
+Do not leave required cells blank.
+
+## Stage 10 — Project Initialization Handoff
+
+Finish with a section named:
+
+`Project Initialization Handoff`
+
+Provide the exact approved values `/project-init` should place into `AGENTS.md`.
+
+Include:
+
+- runtime
+- language
+- framework
+- database
+- cloud
+- region
+- IaC
+- package manager
+- unit-test framework
+- integration-test approach
+- E2E-test approach
+- linting
+- formatting
+- type/static analysis
+- security/dependency scanning
+- dependency restore command pattern
+- build command pattern
+- test command pattern
+
+These values must come from architecture decisions.
+
+`/project-init` must not have to choose them.
+
+## Stage 11 — Architecture Completeness Check
+
+Before finishing, confirm:
+
+- PRD constraints are covered
+- the major architecture is decided
+- the technology baseline is complete
+- implementation agents will not need to choose the stack
+- architecture and ADRs agree
+- cost assumptions are documented
+- security model is defined
+- reliability/recovery is defined
+- test tooling is defined
+- CI/CD approach is defined
+- unresolved decisions are clearly identified
+
+Do not claim architecture is implementation-ready when required technology decisions remain unresolved.
+
+## Opus Escalation
+
+Use the `architect` Opus subagent only if a material decision:
+
+- is unusually high-risk
+- has major irreversible consequences
+- has unresolved security or data-integrity implications
+- has multiple viable alternatives with no defensible conclusion
+- remains unresolved after normal architecture analysis
+
+Do not invoke Opus merely because an architecture contains many components.
+
+Ask for approval before delegating to the Opus architect.
+
+When escalation is not required, Sonnet remains the architecture authority.
+
+## Blocked Output Contract
+
+Whenever this workflow cannot safely continue, the blocked response must contain these fields:
+
+### Blocking issue
+
+State exactly what is missing, conflicting, unsafe, or unresolved.
+
+### Owner
+
+Use exactly one of:
+
+- `PRODUCT`
+- `ARCHITECTURE`
+- `PROJECT_INIT`
+- `SPECIFICATION`
+- `REPOSITORY`
+- `USER_APPROVAL`
+
+Choose the owner that must resolve the blocker.
+
+### Why it blocks
+
+Explain why this stage cannot safely continue without the decision or correction.
+
+### Required action
+
+State the minimum action, clarification, or correction required to unblock the workflow.
+
+### Next command
+
+State the exact next workflow command to run after the blocker is resolved.
+
+Use only one of:
+
+- `/prd`
+- `/architect`
+- `/project-init`
+- `/spec`
+- `/implement`
+
+If a user clarification or repository cleanup must happen first, say so in `Required action`, then name the command to rerun in `Next command`.
+
+The final line must be the workflow's blocked status token and nothing may appear after it.
+
+## Output Status
+
+If architecture is sufficiently complete for project initialization, finish with exactly:
+
+`ARCHITECTURE_READY`
+
+If a required technology or architecture decision remains unresolved, use the Blocked Output Contract.
+
+Routing rules:
+
+- use owner `PRODUCT` and next command `/prd` when the architecture is blocked by an unclear or conflicting product requirement
+- use owner `ARCHITECTURE` and next command `/architect` when the blocker is a technical architecture decision
+- use owner `USER_APPROVAL` and next command `/architect` when an approved Opus escalation or another explicit user decision is required
+
+Finish with exactly:
+
+`ARCHITECTURE_BLOCKED`
+
+Do not output anything after the final status token.
