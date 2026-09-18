@@ -191,21 +191,70 @@ Do not duplicate information already adequately covered by `AGENTS.md`.
 
 Prefer concise rules containing implementation constraints rather than tutorials.
 
-## Stage 6 — Determine Required Skills
+## Stage 6 — Build the Skill Coverage Matrix
 
-Evaluate whether specialized Agent Skills would materially improve implementation quality for the approved technology stack.
+Perform a mandatory skill-coverage review for every major technology and engineering concern in the approved technology baseline.
+
+Do not skip this stage merely because implementation could proceed without additional skills.
+
+At minimum, evaluate the approved project's relevant:
+
+- programming language/runtime
+- application framework
+- database/storage technology
+- cloud provider
+- major cloud services
+- infrastructure-as-code technology
+- testing framework/strategy
+- CI/CD platform
+- security/dependency tooling
+- observability stack
+- other specialized technologies that materially affect implementation quality
+
+For every applicable technology or concern, create one Skill Coverage Matrix row.
+
+Use exactly one status:
+
+- `ALREADY_AVAILABLE` — a suitable approved skill is already available to the project or globally
+- `INSTALL_RECOMMENDED` — a suitable external skill exists and would materially improve implementation quality, but requires explicit user approval before installation
+- `CUSTOM_SKILL_REQUIRED` — no suitable reusable skill exists and project-specific guidance is important enough to justify a focused custom skill
+- `NOT_REQUIRED` — a skill would not materially improve this project beyond `AGENTS.md`, project rules, architecture, ADRs, and normal model capability
+
+Each matrix row must include:
+
+- technology / concern
+- status
+- selected skill name when applicable
+- source/location when applicable
+- why the skill is or is not needed
+- whether user approval is required
+- important security/maintenance considerations when applicable
+
+Example shape:
+
+| Technology / Concern | Status | Skill | Source / Location | Why | Approval |
+| --- | --- | --- | --- | --- | --- |
+| .NET 10 / ASP.NET Core | ALREADY_AVAILABLE | dotnet-production | global | Production .NET implementation guidance | No |
+| AWS Lambda | INSTALL_RECOMMENDED | aws-serverless | reviewed external source | Specialized Lambda/IAM/retry guidance | Yes |
+| Project event envelope | CUSTOM_SKILL_REQUIRED | project-event-contracts | .kilo/skills/ | Repository-specific contract rules | No external install |
+| Simple JSON serialization | NOT_REQUIRED | — | — | Existing project guidance is sufficient | No |
 
 Skills are a curated dependency layer.
 
 Do not create or install skills merely to increase available context.
 
-For each potential skill ask:
+For every proposed non-`NOT_REQUIRED` skill ask:
 
 - Is the technology actually used by this project?
 - Will this skill materially improve implementation quality?
 - Is the guidance specialized enough to justify a skill?
 - Is equivalent guidance already present in `AGENTS.md` or project rules?
 - Is the source trustworthy?
+- Is the skill narrow enough to avoid unnecessary context or conflicting instructions?
+
+The matrix is an explicit completeness check, not a requirement to maximize the number of skills.
+
+A project may legitimately have many `NOT_REQUIRED` rows when normal project instructions are sufficient.
 
 ## Stage 7 — Search Existing Skills Before Creating New Ones
 
@@ -293,6 +342,10 @@ Before declaring project initialization complete, verify:
 - `README.md` accurately describes the project
 - README does not claim unimplemented functionality
 - project rules are relevant and non-duplicative
+- the Skill Coverage Matrix includes every major approved technology and engineering concern that could materially benefit from specialized guidance
+- every matrix row has exactly one allowed status: `ALREADY_AVAILABLE`, `INSTALL_RECOMMENDED`, `CUSTOM_SKILL_REQUIRED`, or `NOT_REQUIRED`
+- every `INSTALL_RECOMMENDED` row identifies a reviewed source and remains uninstalled unless explicitly approved
+- every `CUSTOM_SKILL_REQUIRED` row has either produced a focused project skill or is explicitly reported as unfinished
 - installed skills are relevant to the approved stack
 - third-party skills were explicitly approved
 - no secrets were introduced
@@ -365,13 +418,36 @@ List:
 - relevant `.kilo/rules/*`
 - relevant `.kilo/skills/*`
 
+### Skill Coverage Matrix
+
+Report the complete matrix for every evaluated major technology / concern.
+
+Use only these statuses:
+
+- `ALREADY_AVAILABLE`
+- `INSTALL_RECOMMENDED`
+- `CUSTOM_SKILL_REQUIRED`
+- `NOT_REQUIRED`
+
+For `INSTALL_RECOMMENDED`, clearly mark:
+
+- source
+- why it is useful
+- whether it is official/vendor maintained
+- security/maintenance concerns
+- proposed installation path
+- `Approval required: YES`
+
+Do not treat an unapproved recommendation as installed.
+
 ### Skills
 
-For each skill state:
+Summarize resulting skill actions:
 
 - installed
-- already present
+- already available
 - custom-created
+- recommended but not installed
 - declined
 - not required
 
