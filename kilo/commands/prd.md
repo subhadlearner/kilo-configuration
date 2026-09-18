@@ -15,6 +15,7 @@ Do not implement application code.
 
 Read only the information needed to understand:
 
+- any relevant user-confirmed discovery brief under `docs/discovery/`
 - the problem
 - target users
 - goals
@@ -27,6 +28,13 @@ Read only the information needed to understand:
 - existing product behavior when modifying an existing system
 
 Do not invent requirements merely to make the PRD look complete.
+
+When a relevant discovery brief exists:
+
+- treat confirmed decisions as product context
+- preserve its terminology where practical
+- do not re-ask resolved questions unless new evidence conflicts with them
+- carry explicit non-goals and unresolved questions forward
 
 ## Stage 2 — Identify Ambiguities
 
@@ -243,6 +251,7 @@ State the exact next workflow command to run after the blocker is resolved.
 
 Use only one of:
 
+- `/grill`
 - `/prd`
 - `/architect`
 - `/project-init`
@@ -269,7 +278,9 @@ If the PRD is ready for architecture, finish with exactly:
 
 If a blocking decision remains, use the Blocked Output Contract.
 
-For PRD blockers, the usual owner is `PRODUCT`, and the usual next command is `/prd` after the required clarification or correction.
+For a simple PRD blocker, the usual owner is `PRODUCT` and the next command is `/prd`.
+
+When the blocker consists of multiple coupled product decisions, unclear priorities, or a large ambiguous idea, prefer `/grill` to resolve the decision frontier before rerunning `/prd`.
 
 Finish with exactly:
 
