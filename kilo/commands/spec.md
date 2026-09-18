@@ -1,10 +1,43 @@
 ---
 description: Decompose an approved architecture into independently implementable specifications
 agent: planner
-model: anthropic/claude-sonnet-5
+model: openai/gpt-5.6-sol
 ---
 
 # Specification Workflow
+
+## Optional User Model Selection
+
+The user may choose the model for this workflow in natural language.
+
+Examples:
+
+```text
+Use GPT.
+Use Terra.
+Use Luna.
+Use Claude.
+Use Haiku.
+Use Opus.
+Use DeepSeek.
+```
+
+Aliases resolve as:
+
+- GPT / OpenAI / Sol → GPT-5.6 Sol
+- Terra → GPT-5.6 Terra
+- Luna → GPT-5.6 Luna
+- Claude / Sonnet → Claude Sonnet 5
+- Haiku → Claude Haiku 4.5
+- Opus → Claude Opus 5
+- DeepSeek → DeepSeek V4.1 Flash
+
+If the requested model differs from the current planner model, route the substantive work through the model-selectable planning worker using the explicit per-task model override.
+
+The user's model choice changes only the model. It does not change this workflow's role, authority, permissions, acceptance criteria, or safety rules.
+
+If the requested model is unavailable, stop clearly rather than silently substituting another model.
+
 
 Create implementation specifications from the approved PRD and architecture.
 
@@ -275,15 +308,18 @@ Before returning `SPEC_READY`, adversarially check any specification whose corre
 For each triggered specification:
 
 1. extract the behavior/contract, invariants, acceptance criteria, and relevant architecture constraints
-2. if the user explicitly requested Opus for this specification review, delegate directly to `adversary-opus`; the request authorizes that specific invocation and no prior DeepSeek pass or Sonnet justification is required
-3. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) without the spec author's rationale
-4. reconcile findings against the approved PRD/architecture
-5. correct the specification when a finding exposes a real ambiguity, missing failure case, or unverifiable acceptance criterion
-6. when using the default path, stop after at most two materially changed DeepSeek adversarial cycles; when using user-directed Opus, do not add DeepSeek automatically
+2. if the user explicitly requested Claude Sonnet, delegate directly to `adversary-sonnet`; the request authorizes that specific paid invocation and no prior DeepSeek pass or Sol justification is required
+3. if the user explicitly requested Claude Opus, delegate directly to `adversary-opus`; the request authorizes that specific premium invocation and no prior DeepSeek/Sol pass or Sol justification is required
+4. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) without the spec author's rationale
+5. the GPT-5.6 Sol planner reconciles findings against the approved PRD/architecture
+6. correct the specification when a finding exposes a real ambiguity, missing failure case, or unverifiable acceptance criterion
+7. when using the default path, stop after at most two materially changed DeepSeek adversarial cycles; when using user-directed Claude, do not add another adversary automatically
 
-When the user did not explicitly choose Opus, use `adversary-opus` only for a rare critical specification whose residual risk remains unusually high after the DeepSeek pass—for example irreversible migration/data integrity, auth/IAM, public contracts, or distributed consistency with major blast radius.
+After a default DeepSeek pass, the Sol planner may propose `adversary-sonnet` when material uncertainty remains and an independent model-family review would materially improve confidence.
 
-Agent-proposed Opus escalation requires explicit user approval before invocation. Pass only the artifact, contract, and unresolved material default-adversary findings. Treat the Opus result as evidence, not authority.
+Reserve agent-proposed `adversary-opus` for rare critical specifications whose residual risk remains unusually high—for example irreversible migration/data integrity, auth/IAM, public contracts, or distributed consistency with major blast radius.
+
+Any agent-proposed Claude invocation requires explicit user approval. Pass only the artifact, contract, and unresolved material findings. Treat Claude results as evidence, not authority.
 
 If a material issue actually belongs to product or architecture authority, return `SPEC_BLOCKED` and route upstream rather than silently solving it in the specification.
 

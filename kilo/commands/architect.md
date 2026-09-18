@@ -1,10 +1,43 @@
 ---
 description: Design the production architecture and lock the technology baseline
 agent: planner
-model: anthropic/claude-sonnet-5
+model: openai/gpt-5.6-sol
 ---
 
 # Production Architecture Workflow
+
+## Optional User Model Selection
+
+The user may choose the model for this workflow in natural language.
+
+Examples:
+
+```text
+Use GPT.
+Use Terra.
+Use Luna.
+Use Claude.
+Use Haiku.
+Use Opus.
+Use DeepSeek.
+```
+
+Aliases resolve as:
+
+- GPT / OpenAI / Sol → GPT-5.6 Sol
+- Terra → GPT-5.6 Terra
+- Luna → GPT-5.6 Luna
+- Claude / Sonnet → Claude Sonnet 5
+- Haiku → Claude Haiku 4.5
+- Opus → Claude Opus 5
+- DeepSeek → DeepSeek V4.1 Flash
+
+If the requested model differs from the current planner model, route the substantive work through the model-selectable planning worker using the explicit per-task model override.
+
+The user's model choice changes only the model. It does not change this workflow's role, authority, permissions, acceptance criteria, or safety rules.
+
+If the requested model is unavailable, stop clearly rather than silently substituting another model.
+
 
 Design the production architecture for the approved PRD.
 
@@ -473,27 +506,42 @@ Trigger the adversarial gate for decisions involving, where applicable:
 For triggered decisions:
 
 1. extract the smallest decision artifact and the requirements/invariants it must satisfy
-2. if the user explicitly requested Opus for this architecture review, delegate directly to `adversary-opus`; the user request is authorization for that specific invocation, no DeepSeek pass or Sonnet justification is required
-3. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) with artifact + contract only
-4. do not send the decision author's rationale or preferred conclusion
-5. reconcile every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
-6. revise the architecture/ADR when a finding is valid and actionable
-7. when using the default path, run at most two DeepSeek adversarial cycles and only when the draft materially changed; when using user-directed Opus, do not add DeepSeek automatically
+2. if the user explicitly requested Claude Sonnet for this architecture review, delegate directly to `adversary-sonnet`; that request authorizes the specific paid invocation and no DeepSeek pass or Sol justification is required
+3. if the user explicitly requested Claude Opus, delegate directly to `adversary-opus`; that request authorizes the specific premium invocation and no DeepSeek/Sol pass or Sol justification is required
+4. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) with artifact + contract only
+5. do not send the decision author's rationale or preferred conclusion
+6. the GPT-5.6 Sol planner reconciles every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
+7. revise the architecture/ADR when a finding is valid and actionable
+8. when using the default path, run at most two DeepSeek adversarial cycles and only when the draft materially changed; when using user-directed Claude, do not add another adversary automatically
 
-### Opus adversarial paths
+### Claude adversarial escalation paths
 
-#### User-directed Opus
+#### User-directed Sonnet or Opus
 
-The user may explicitly request an Opus adversarial review of the architecture or a named architecture decision.
+The user may explicitly request Claude Sonnet or Claude Opus for the architecture or a named architecture decision.
 
 When explicitly requested:
 
-- invoke `adversary-opus` directly
+- invoke the requested adversary directly
 - treat the request as approval for that specific invocation
-- skip the default DeepSeek adversarial pass unless the user asks for both
-- do not require Sonnet to justify the use of Opus
+- skip the default DeepSeek pass unless the user asks for both
+- do not require the GPT-5.6 Sol planner to justify the user's model choice
 
-#### Agent-proposed rare critical escalation
+Use Sonnet for a strong paid independent model-family review.
+Use Opus when the user deliberately wants the highest-cost premium challenge.
+
+#### Agent-proposed Sonnet escalation
+
+After a default DeepSeek pass, the Sol planner may propose Sonnet when material uncertainty remains and cross-model diversity is likely to improve the decision.
+
+Before invoking Sonnet on the agent's initiative:
+
+1. explain the unresolved material uncertainty
+2. ask for explicit user approval
+3. after approval, send the smallest artifact + contract + unresolved findings
+4. reconcile Sonnet as evidence, not authority
+
+#### Agent-proposed rare critical Opus escalation
 
 When the user did not request Opus, consider `adversary-opus` after the default DeepSeek adversarial pass only if the decision is both material and unusually critical, such as:
 
@@ -506,7 +554,7 @@ When the user did not request Opus, consider `adversary-opus` after the default 
 - major irreversible platform lock-in or recurring-cost exposure
 - materially conflicting findings that remain unresolved after Sonnet reconciles the DeepSeek pass
 
-Do not invoke Opus automatically when the user has not requested it.
+Do not invoke paid Claude models automatically when the user has not requested them.
 
 For an agent-proposed escalation:
 
@@ -515,9 +563,9 @@ For an agent-proposed escalation:
 3. after approval, send artifact + contract + only unresolved material DeepSeek findings
 4. reconcile the Opus result as additional evidence, not authority
 
-For a user-directed Opus review, steps 1–2 are already satisfied by the user's explicit request.
+For a user-directed Sonnet or Opus review, approval/justification is already satisfied by the user's explicit request.
 
-If agent-proposed Opus is not justified or not approved, continue with the bounded DeepSeek/Sonnet process.
+If a proposed paid Claude escalation is not justified or not approved, continue with the bounded DeepSeek/Sol process.
 
 Do not invoke the adversary for ordinary low-risk choices merely to add ceremony.
 
@@ -542,9 +590,11 @@ Before finishing, confirm:
 
 Do not claim architecture is implementation-ready when required technology decisions remain unresolved.
 
-## Opus Escalation
+## Architecture Authority Escalation to Opus
 
-Use the `architect` Opus subagent only if a material decision:
+This is distinct from adversarial review.
+
+Use the `architect` Opus subagent only if a material architecture decision cannot be responsibly settled by the primary GPT-5.6 Sol planner and:
 
 - is unusually high-risk
 - has major irreversible consequences
@@ -556,7 +606,7 @@ Do not invoke Opus merely because an architecture contains many components.
 
 Ask for approval before delegating to the Opus architect.
 
-When escalation is not required, Sonnet remains the architecture authority.
+When escalation is not required, GPT-5.6 Sol remains the architecture authority.
 
 ## Blocked Output Contract
 

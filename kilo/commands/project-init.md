@@ -1,7 +1,7 @@
 ---
 description: Initialize repository instructions, rules, and curated skills from the approved architecture
 agent: code
-model: anthropic/claude-sonnet-5
+model: openai/gpt-5.6-luna
 ---
 
 # Project Initialization Workflow

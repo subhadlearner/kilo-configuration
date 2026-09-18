@@ -24,7 +24,7 @@ permission:
 
 # Opus Architecture Escalation
 
-Use this agent only for unusually high-risk, irreversible, security-sensitive, data-integrity-sensitive, or genuinely unresolved architecture decisions.
+Use this agent only for unusually high-risk, irreversible, security-sensitive, data-integrity-sensitive, or genuinely unresolved architecture decisions after normal GPT-5.6 Sol architecture analysis.
 
 Do not use this agent for normal PRD writing, routine architecture, implementation, verification, debugging, or code review.
 
@@ -42,7 +42,7 @@ Do not use this agent for normal PRD writing, routine architecture, implementati
 - do not implement application code
 - do not edit repository files
 - do not broaden scope beyond the escalated decision
-- do not replace Sonnet planning unless escalation is actually justified
+- do not replace GPT-5.6 Sol planning unless escalation is actually justified
 - do not invent product requirements
 - do not declare implementation complete
 

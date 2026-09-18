@@ -4,13 +4,13 @@
   "small_model": "deepseek/deepseek-flash",
   "agent": {
     "ask": {
-      "model": "anthropic/claude-sonnet-5"
+      "model": "openai/gpt-5.6-luna"
     },
     "code": {
       "model": "deepseek/deepseek-flash"
     },
     "plan": {
-      "model": "anthropic/claude-sonnet-5"
+      "model": "openai/gpt-5.6-sol"
     },
     "debug": {
       "model": "deepseek/deepseek-flash"
@@ -46,12 +46,18 @@
       "adversary": "allow",
       "adversary-opus": "ask",
       "code-reviewer": "allow",
-      "pre-reviewer": "allow"
+      "pre-reviewer": "allow",
+      "adversary-sonnet": "ask",
+      "planning-worker": "allow",
+      "adversary-flex": "allow"
     },
     "skill": "ask",
     "websearch": "ask",
     "webfetch": "ask",
     "todoread": "allow",
     "todowrite": "ask"
+  },
+  "experimental": {
+    "task_model_selection": true
   }
 }
