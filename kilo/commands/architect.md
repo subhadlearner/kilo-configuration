@@ -38,6 +38,33 @@ The user's model choice changes only the model. It does not change this workflow
 
 If the requested model is unavailable, stop clearly rather than silently substituting another model.
 
+### Workflow Model and Adversary Model Are Separate
+
+In this command, a plain request such as `use Claude`, `use Terra`, or `use GPT` selects the model that **authors and owns the architecture workflow**.
+
+It does not select the adversary.
+
+Unless the user separately specifies an adversary, high-risk architecture decisions use the default DeepSeek adversary.
+
+To override only the adversary, the user must use explicit wording such as:
+
+```text
+For adversarial review use Opus.
+Use Sonnet as the adversary.
+Adversary: GPT.
+```
+
+If both are supplied, honor both independently.
+
+Example:
+
+```text
+/architect ... Use Claude.
+For adversarial review use Opus.
+```
+
+means Claude Sonnet authors the architecture, Opus challenges the selected high-risk artifact, and Claude Sonnet remains the owning model that reconciles the findings.
+
 
 Design the production architecture for the approved PRD.
 
@@ -506,33 +533,34 @@ Trigger the adversarial gate for decisions involving, where applicable:
 For triggered decisions:
 
 1. extract the smallest decision artifact and the requirements/invariants it must satisfy
-2. if the user explicitly requested Claude Sonnet for this architecture review, delegate directly to `adversary-sonnet`; that request authorizes the specific paid invocation and no DeepSeek pass or Sol justification is required
-3. if the user explicitly requested Claude Opus, delegate directly to `adversary-opus`; that request authorizes the specific premium invocation and no DeepSeek/Sol pass or Sol justification is required
-4. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) with artifact + contract only
+2. determine whether the user separately selected an adversary model
+3. if the user selected an adversary, delegate to `adversary-flex` with the explicit per-task model override that corresponds to that adversary choice
+4. otherwise delegate to the default `adversary` subagent (DeepSeek Flash)
 5. do not send the decision author's rationale or preferred conclusion
-6. the GPT-5.6 Sol planner reconciles every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
+6. the **owning architecture workflow model** reconciles every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
 7. revise the architecture/ADR when a finding is valid and actionable
-8. when using the default path, run at most two DeepSeek adversarial cycles and only when the draft materially changed; when using user-directed Claude, do not add another adversary automatically
+8. when using the default path, run at most two DeepSeek adversarial cycles and only when the draft materially changed; when using a user-directed adversary, do not add another adversary automatically
+
+A plain workflow-model request such as `use Claude` or `use Terra` must never be interpreted as an adversary override.
 
 ### Claude adversarial escalation paths
 
-#### User-directed Sonnet or Opus
+#### User-directed adversary
 
-The user may explicitly request Claude Sonnet or Claude Opus for the architecture or a named architecture decision.
+The user may explicitly select any supported connected model as the adversary for the architecture or a named architecture decision.
 
 When explicitly requested:
 
-- invoke the requested adversary directly
+- invoke `adversary-flex` with that exact model override
 - treat the request as approval for that specific invocation
 - skip the default DeepSeek pass unless the user asks for both
-- do not require the GPT-5.6 Sol planner to justify the user's model choice
+- do not require the owning workflow model to justify the user's adversary choice
 
-Use Sonnet for a strong paid independent model-family review.
-Use Opus when the user deliberately wants the highest-cost premium challenge.
+This is separate from the workflow-model selection.
 
 #### Agent-proposed Sonnet escalation
 
-After a default DeepSeek pass, the Sol planner may propose Sonnet when material uncertainty remains and cross-model diversity is likely to improve the decision.
+After a default DeepSeek pass, the owning architecture workflow may propose Sonnet when material uncertainty remains and cross-model diversity is likely to improve the decision.
 
 Before invoking Sonnet on the agent's initiative:
 
@@ -552,7 +580,7 @@ When the user did not request Opus, consider `adversary-opus` after the default 
 - recovery/restore decisions with material RTO/RPO consequences
 - security-sensitive infrastructure/networking with significant production blast radius
 - major irreversible platform lock-in or recurring-cost exposure
-- materially conflicting findings that remain unresolved after Sonnet reconciles the DeepSeek pass
+- materially conflicting findings that remain unresolved after the owning workflow reconciles the DeepSeek pass
 
 Do not invoke paid Claude models automatically when the user has not requested them.
 
@@ -565,7 +593,7 @@ For an agent-proposed escalation:
 
 For a user-directed Sonnet or Opus review, approval/justification is already satisfied by the user's explicit request.
 
-If a proposed paid Claude escalation is not justified or not approved, continue with the bounded DeepSeek/Sol process.
+If a proposed paid Claude escalation is not justified or not approved, continue with the bounded DeepSeek + owning-workflow process.
 
 Do not invoke the adversary for ordinary low-risk choices merely to add ceremony.
 
@@ -594,7 +622,7 @@ Do not claim architecture is implementation-ready when required technology decis
 
 This is distinct from adversarial review.
 
-Use the `architect` Opus subagent only if a material architecture decision cannot be responsibly settled by the primary GPT-5.6 Sol planner and:
+Use the `architect` Opus subagent only if a material architecture decision cannot be responsibly settled by the owning architecture workflow model and:
 
 - is unusually high-risk
 - has major irreversible consequences
@@ -606,7 +634,7 @@ Do not invoke Opus merely because an architecture contains many components.
 
 Ask for approval before delegating to the Opus architect.
 
-When escalation is not required, GPT-5.6 Sol remains the architecture authority.
+When escalation is not required, the selected owning architecture workflow model remains the architecture authority.
 
 ## Blocked Output Contract
 

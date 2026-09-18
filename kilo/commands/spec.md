@@ -38,6 +38,24 @@ The user's model choice changes only the model. It does not change this workflow
 
 If the requested model is unavailable, stop clearly rather than silently substituting another model.
 
+### Workflow Model and Adversary Model Are Separate
+
+A plain request such as `use Claude`, `use Terra`, or `use GPT` selects the model that authors and owns the specification workflow.
+
+It does not select the adversary.
+
+Unless separately overridden, high-risk specifications use the default DeepSeek adversary.
+
+To choose a different adversary, use explicit wording such as:
+
+```text
+For adversarial review use Opus.
+Use Sonnet as the adversary.
+Adversary: GPT.
+```
+
+The selected specification workflow model remains responsible for reconciling adversarial findings.
+
 
 Create implementation specifications from the approved PRD and architecture.
 
@@ -308,14 +326,16 @@ Before returning `SPEC_READY`, adversarially check any specification whose corre
 For each triggered specification:
 
 1. extract the behavior/contract, invariants, acceptance criteria, and relevant architecture constraints
-2. if the user explicitly requested Claude Sonnet, delegate directly to `adversary-sonnet`; the request authorizes that specific paid invocation and no prior DeepSeek pass or Sol justification is required
-3. if the user explicitly requested Claude Opus, delegate directly to `adversary-opus`; the request authorizes that specific premium invocation and no prior DeepSeek/Sol pass or Sol justification is required
-4. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) without the spec author's rationale
-5. the GPT-5.6 Sol planner reconciles findings against the approved PRD/architecture
+2. determine whether the user separately selected an adversary model
+3. if the user selected an adversary, delegate to `adversary-flex` with the explicit per-task model override for that model
+4. otherwise delegate to the default `adversary` subagent (DeepSeek Flash)
+5. the **owning specification workflow model** reconciles findings against the approved PRD/architecture
 6. correct the specification when a finding exposes a real ambiguity, missing failure case, or unverifiable acceptance criterion
-7. when using the default path, stop after at most two materially changed DeepSeek adversarial cycles; when using user-directed Claude, do not add another adversary automatically
+7. when using the default path, stop after at most two materially changed DeepSeek adversarial cycles; when using a user-directed adversary, do not add another adversary automatically
 
-After a default DeepSeek pass, the Sol planner may propose `adversary-sonnet` when material uncertainty remains and an independent model-family review would materially improve confidence.
+A plain workflow-model request such as `use Claude` must never be interpreted as an adversary override.
+
+After a default DeepSeek pass, the owning specification workflow may propose `adversary-sonnet` when material uncertainty remains and an independent model-family review would materially improve confidence.
 
 Reserve agent-proposed `adversary-opus` for rare critical specifications whose residual risk remains unusually high—for example irreversible migration/data integrity, auth/IAM, public contracts, or distributed consistency with major blast radius.
 
