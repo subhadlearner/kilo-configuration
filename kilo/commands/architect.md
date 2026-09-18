@@ -1,7 +1,7 @@
 ---
 description: Design the production architecture and lock the technology baseline
 agent: planner
-model: anthropic/claude-sonnet-5
+model: openai/gpt-5.6-sol
 ---
 
 # Production Architecture Workflow
