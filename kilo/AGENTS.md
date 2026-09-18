@@ -8,12 +8,17 @@ Produce production-grade software with minimum unnecessary complexity, strong en
 
 For normal feature work, use this lifecycle:
 
-`/prd → /architect → /project-init → /spec → /implement → /verify → /review`
+`/grill (optional) → /prd → /architect → /project-init → /spec → /implement → /verify → /review`
 
-Repair loops:
+Use `/grill` before `/prd` when the idea is ambiguous, unusually large, high-stakes, or contains many coupled product decisions. Skip it for clear, bounded work.
+
+Repair and incident loops:
 
 - `/verify → NOT_DONE → /fix → /verify`
 - `/review → CHANGES_REQUIRED or REQUEST CHANGES → /fix → /verify → /review`
+- `/diagnose (optional) → /fix → /verify` for difficult runtime, integration, concurrency, performance, or intermittent defects
+
+`/adversarial-check` is an auxiliary risk-control command for high-risk artifacts; it does not replace `/verify` or `/review`.
 
 Production deployment always requires human approval.
 
@@ -30,6 +35,7 @@ Production deployment always requires human approval.
 
 ## Technology Decision Authority
 
+- `/grill` clarifies product intent and trade-offs; it does not choose implementation architecture.
 - `/prd` defines product requirements and constraints.
 - `/architect` chooses the major technology baseline.
 - `/project-init` records and operationalizes that baseline in the repository.
@@ -37,9 +43,20 @@ Production deployment always requires human approval.
 - `/implement` executes the approved specification.
 - `/verify` owns deterministic `DONE` / `NOT_DONE`.
 - `/review` owns AI review after verification.
-- `/fix` repairs verification or review blockers without redesigning the system.
+- `/diagnose` localizes difficult defects without redefining intended behavior.
+- `/fix` repairs diagnosed, verification, or review blockers without redesigning the system.
+- `/adversarial-check` challenges assumptions and failure modes but does not become the decision authority.
 
 Implementation agents must not choose a missing major technology decision on their own.
+
+## Discovery, TDD, Diagnosis, and Adversarial Discipline
+
+- Use `requirements-grilling` when unresolved product decisions would otherwise be guessed. The agent researches facts; the user decides scope, priorities, and trade-offs.
+- Use `tdd` for behavior-bearing application code when a stable observable seam exists. Work in thin red → green slices rather than writing tests after a large implementation.
+- Use `diagnosing-bugs` for non-trivial failures. Build a tight red-capable feedback loop for the exact symptom before asserting root cause.
+- Use `adversarial-check` selectively for high-risk or hard-to-reverse decisions such as auth/IAM, destructive migrations, concurrency/idempotency, public contracts, data integrity, recovery, and security-sensitive infrastructure.
+- Fresh adversarial review receives the smallest artifact plus its contract, not the author's preferred conclusion. Findings are evidence to reconcile, not authority.
+- Two materially unchanged adversarial cycles with substantive unresolved findings require human or architecture escalation.
 
 ## Specification Discipline
 
@@ -79,6 +96,8 @@ The implementation agent must:
 - follow architecture and ADRs
 - use the approved technology stack
 - write production-grade code
+- load and apply relevant approved skills
+- use test-first vertical slices when the specification marks TDD applicable
 - implement applicable tests
 - preserve security, reliability, and public contracts
 - report failures honestly
@@ -99,11 +118,15 @@ Use applicable:
 - dependency/security scans
 - IaC validation
 
+Never make verification green by weakening the verification mechanism.
+
 Never:
 
-- delete a failing test merely to obtain green status
+- delete, skip, or quarantine a failing required test merely to obtain green status
 - weaken assertions to make implementation pass
 - mock away the behavior being tested
+- lower required quality, coverage, performance, or security thresholds without approval
+- add warning/lint/static-analysis suppressions solely to silence a failure
 - disable a required quality/security check simply to obtain a pass
 
 `/verify` is the authoritative completion gate.
@@ -165,8 +188,8 @@ Prefer managed/serverless services when they provide the best balance of reliabi
 
 ## Model Escalation
 
-Use cheaper models for routine implementation, repair, and pre-review.
+Use cheaper models for routine implementation, diagnosis, repair, adversarial first-pass checks, and pre-review.
 
-Use Claude Sonnet for planning, architecture, specification design, and senior review.
+Use Claude Sonnet for discovery/grilling orchestration, planning, architecture, specification design, adversarial reconciliation, and senior review.
 
 Use Claude Opus only for explicitly approved, high-risk unresolved architecture decisions.
