@@ -275,14 +275,15 @@ Before returning `SPEC_READY`, adversarially check any specification whose corre
 For each triggered specification:
 
 1. extract the behavior/contract, invariants, acceptance criteria, and relevant architecture constraints
-2. delegate first to the default `adversary` subagent (DeepSeek Flash) without the spec author's rationale
-3. reconcile findings against the approved PRD/architecture
-4. correct the specification when a finding exposes a real ambiguity, missing failure case, or unverifiable acceptance criterion
-5. stop after at most two materially changed default DeepSeek adversarial cycles
+2. if the user explicitly requested Opus for this specification review, delegate directly to `adversary-opus`; the request authorizes that specific invocation and no prior DeepSeek pass or Sonnet justification is required
+3. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) without the spec author's rationale
+4. reconcile findings against the approved PRD/architecture
+5. correct the specification when a finding exposes a real ambiguity, missing failure case, or unverifiable acceptance criterion
+6. when using the default path, stop after at most two materially changed DeepSeek adversarial cycles; when using user-directed Opus, do not add DeepSeek automatically
 
-Use `adversary-opus` only for a rare critical specification whose residual risk remains unusually high after the DeepSeek pass—for example irreversible migration/data integrity, auth/IAM, public contracts, or distributed consistency with major blast radius.
+When the user did not explicitly choose Opus, use `adversary-opus` only for a rare critical specification whose residual risk remains unusually high after the DeepSeek pass—for example irreversible migration/data integrity, auth/IAM, public contracts, or distributed consistency with major blast radius.
 
-Opus escalation requires explicit user approval before invocation. Pass only the artifact, contract, and unresolved material default-adversary findings. Treat the Opus result as evidence, not authority.
+Agent-proposed Opus escalation requires explicit user approval before invocation. Pass only the artifact, contract, and unresolved material default-adversary findings. Treat the Opus result as evidence, not authority.
 
 If a material issue actually belongs to product or architecture authority, return `SPEC_BLOCKED` and route upstream rather than silently solving it in the specification.
 
