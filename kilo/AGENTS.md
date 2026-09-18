@@ -186,16 +186,81 @@ Challenge unnecessary always-on or premium infrastructure.
 
 Prefer managed/serverless services when they provide the best balance of reliability, simplicity, and cost.
 
-## Model Escalation
+## Model Routing and Escalation
 
-Use cheaper models for routine implementation, diagnosis, repair, default adversarial checks, and pre-review.
+### Primary reasoning — GPT-5.6 Sol
 
-Use Claude Sonnet for discovery/grilling orchestration, planning, architecture, specification design, adversarial reconciliation, and senior review.
+Use GPT-5.6 Sol for:
+
+- `/grill`
+- `/prd`
+- `/architect`
+- `/spec`
+- senior code review
+- reconciliation of adversarial findings
+
+Sol is the default frontier reasoning model because it is available through the user's ChatGPT subscription in Kilo and does not consume the separate Anthropic API budget.
+
+### Lightweight orchestration — GPT-5.6 Luna
+
+Use GPT-5.6 Luna for:
+
+- `/project-init`
+- lightweight Ask-mode repository/documentation work
+
+Luna must operationalize approved decisions, not make missing architecture decisions.
+
+### Execution workhorse — DeepSeek Flash
+
+Use DeepSeek Flash for:
+
+- `/implement`
+- `/verify`
+- `/fix`
+- `/diagnose`
+- default adversarial checks
+- pre-review
+
+### Paid cross-model review — Claude Sonnet
+
+Claude Sonnet is no longer a mandatory lifecycle model.
+
+Use Sonnet as an independent model-family second opinion when:
+
+- the user explicitly requests it, or
+- the Sol planner proposes a material cross-model review and the user approves the paid invocation.
+
+Typical uses include architecture/spec adversarial review, security/consistency review, or another material decision where model diversity adds value.
+
+### Premium escalation — Claude Opus
+
+Reserve Opus for:
+
+- user-directed premium adversarial review
+- rare critical agent-proposed adversarial escalation with explicit approval
+- rare architecture-authority escalation when Sol cannot settle a high-impact decision
 
 Default adversary: DeepSeek Flash.
+Enhanced paid adversary: Claude Sonnet.
+Premium adversary: Claude Opus.
 
-Agent-proposed escalation adversary: Claude Opus, only for rare critical decisions after a DeepSeek adversarial pass and only with explicit user approval.
+A user-directed request for Sonnet or Opus authorizes that specific invocation directly. Do not require a prior DeepSeek pass or Sol justification, and do not add another adversarial model unless the user asks.
 
-User-directed premium override: the user may explicitly request Claude Opus for an architecture, specification, or other adversarial review. That request authorizes the specific Opus invocation directly; a prior DeepSeek adversarial pass and Sonnet justification are not required. Do not add a DeepSeek adversarial pass unless the user asks for both.
+Agent-proposed Sonnet or Opus calls always require explicit user approval.
 
-Use Claude Opus on the agent's own initiative only when the decision is unusually high-risk, hard to reverse, security/data-integrity sensitive, or materially unresolved.
+## Context Quality and Cost
+
+Do not reduce relevant context merely to save tokens.
+
+Quality takes priority over artificial token minimization.
+
+For reasoning stages:
+
+- load all approved context materially required to make the decision
+- preserve PRD, architecture, ADR, discovery, specification, and repository evidence when relevant
+- exclude unrelated history, obsolete artifacts, duplicate text, and unrelated source files
+- use authoritative handoffs and targeted retrieval instead of repeatedly re-sending irrelevant repository content
+- never omit a material constraint because of cost
+- if a decision genuinely needs a large context, use the large context rather than guessing
+
+The optimization target is **relevant context density**, not minimum token count.
