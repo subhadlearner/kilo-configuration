@@ -90,27 +90,40 @@ Do not include the author's preferred conclusion or reasoning narrative in the a
 
 ## Stage 3 — Select Adversarial Model
 
-There are two valid entry modes.
+There are three valid entry modes.
 
 ### Mode A — Default
 
-When the user did not request a specific premium model:
+When the user did not request a specific paid Claude model:
 
 - delegate first to the `adversary` subagent (DeepSeek Flash)
 - treat DeepSeek as the default cost-controlled fresh-context adversary
-- do not start with Opus automatically
+- the owning GPT-5.6 Sol planner reconciles the findings
+- do not start with Claude automatically
 
-### Mode B — User-directed Opus
+### Mode B — User-directed Sonnet
 
-When the user explicitly asks for Opus for this adversarial review:
+When the user explicitly asks for Claude Sonnet for this adversarial review:
 
-- the user's request is authorization for this specific premium invocation
+- the user's request authorizes this specific paid invocation
+- delegate directly to `adversary-sonnet`
+- do not require a prior DeepSeek pass
+- do not require Sol to justify the user's model choice
+- do not invoke DeepSeek or Opus unless the user explicitly asks
+
+Use this when the user wants a strong independent model-family second opinion without paying Opus rates.
+
+### Mode C — User-directed Opus
+
+When the user explicitly asks for Claude Opus for this adversarial review:
+
+- the user's request authorizes this specific premium invocation
 - delegate directly to `adversary-opus`
-- do not require a prior DeepSeek adversarial pass
-- do not require Sonnet to justify why Opus is warranted
-- do not invoke DeepSeek as a second adversary unless the user explicitly asks for both
+- do not require a prior DeepSeek or Sonnet pass
+- do not require Sol to justify why Opus is warranted
+- do not invoke another adversarial model unless the user explicitly asks
 
-In either mode, the reviewer must find ways the artifact can fail the contract rather than validate the author's confidence.
+In every mode, the reviewer must find ways the artifact can fail the contract rather than validate the author's confidence.
 
 ## Stage 4 — Reconcile Findings
 
@@ -127,11 +140,34 @@ For `ACTIONABLE` findings, propose or apply the correction only within the curre
 
 For `ACCEPTED_TRADEOFF`, document the consequence and why it is accepted.
 
-## Stage 5 — Decide Whether Agent-Proposed Premium Escalation Is Justified
+## Stage 5 — Decide Whether Agent-Proposed Claude Escalation Is Justified
 
 This stage applies only when Stage 3 used the default DeepSeek path.
 
-After reconciling the default DeepSeek findings, consider an Opus adversarial escalation only when at least one of these is true:
+After the GPT-5.6 Sol planner reconciles the DeepSeek findings:
+
+### Sonnet escalation
+
+Consider `adversary-sonnet` when a material design uncertainty remains and an independent model-family opinion would materially improve confidence.
+
+Examples:
+
+- security/trust-boundary reasoning
+- concurrency or consistency assumptions
+- public contract compatibility
+- migration/cutover design
+- a material disagreement between the default adversary and the Sol planner
+
+Before an agent-proposed Sonnet call:
+
+1. explain why a paid cross-model review is useful
+2. ask for explicit user approval
+3. after approval, delegate to `adversary-sonnet`
+4. provide artifact + contract + unresolved material findings only
+
+### Opus escalation
+
+Consider `adversary-opus` only when at least one of these is true:
 
 - the decision is unusually high-risk and hard to reverse
 - failure could cause serious security, authorization, data-loss, corruption, or recovery impact
@@ -142,25 +178,25 @@ After reconciling the default DeepSeek findings, consider an Opus adversarial es
 
 If none apply, do not use Opus.
 
-If escalation is justified:
+If Opus escalation is justified:
 
-1. explain why DeepSeek + Sonnet are insufficient for this decision
+1. explain why DeepSeek + Sol, and any already-used Sonnet review, are insufficient for this decision
 2. ask for explicit user approval
 3. only after approval, delegate to `adversary-opus`
-4. provide artifact + contract + only the unresolved material DeepSeek findings
+4. provide artifact + contract + only unresolved material findings
 5. reconcile the Opus result; do not treat it as automatic authority
 
-This justification/approval sequence is not required when the user already explicitly requested Opus in Stage 3.
+The approval/justification sequence is not required when the user explicitly selected Sonnet or Opus in Stage 3.
 
 ## Stage 6 — Bounded Recheck
 
 When the default DeepSeek path was used and no Opus escalation occurred, one additional DeepSeek adversarial pass may be run only when the artifact changed materially.
 
-When the user-directed Opus path was used, do not add a DeepSeek pass automatically.
+When a user-directed Sonnet or Opus path was used, do not add a DeepSeek pass automatically.
 
 Do not exceed two default adversarial cycles automatically.
 
-An approved Opus escalation replaces further automatic adversarial cycling for that decision.
+An approved Claude escalation replaces further automatic adversarial cycling for that decision unless the user explicitly requests another model.
 
 If substantive unresolved findings remain after the bounded process, escalate to the owning workflow/human rather than grinding.
 
