@@ -6,6 +6,39 @@ model: openai/gpt-5.6-sol
 
 # Requirements Grilling Workflow
 
+## Optional User Model Selection
+
+The user may choose the model for this workflow in natural language.
+
+Examples:
+
+```text
+Use GPT.
+Use Terra.
+Use Luna.
+Use Claude.
+Use Haiku.
+Use Opus.
+Use DeepSeek.
+```
+
+Aliases resolve as:
+
+- GPT / OpenAI / Sol → GPT-5.6 Sol
+- Terra → GPT-5.6 Terra
+- Luna → GPT-5.6 Luna
+- Claude / Sonnet → Claude Sonnet 5
+- Haiku → Claude Haiku 4.5
+- Opus → Claude Opus 5
+- DeepSeek → DeepSeek V4.1 Flash
+
+If the requested model differs from the current planner model, route the substantive work through the model-selectable planning worker using the explicit per-task model override.
+
+The user's model choice changes only the model. It does not change this workflow's role, authority, permissions, acceptance criteria, or safety rules.
+
+If the requested model is unavailable, stop clearly rather than silently substituting another model.
+
+
 Use this workflow when an idea is large, ambiguous, high-stakes, or contains multiple coupled product decisions.
 
 Do not design implementation architecture.
