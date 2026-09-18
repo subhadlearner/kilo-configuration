@@ -108,12 +108,9 @@ Return:
 
 `FIX_BLOCKED`
 
-Include:
+Do not silently redesign the system.
 
-- the blocker
-- why it cannot be repaired locally
-- the architecture/specification conflict
-- the minimum decision required
+Use the Blocked Output Contract below to identify the owner, required action, and exact next command.
 
 ## Stage 4 — Apply Minimal Corrective Changes
 
@@ -152,7 +149,7 @@ Return:
 
 `FIX_BLOCKED`
 
-Describe the conflict.
+Use the Blocked Output Contract below.
 
 ## Stage 6 — Dependency and Tooling Changes
 
@@ -163,7 +160,13 @@ Do not install a new package, runtime, testing tool, linter, scanner, or infrast
 
 If the repair requires a new dependency not previously approved:
 
-STOP and request approval.
+STOP.
+
+Return:
+
+`FIX_BLOCKED`
+
+Use owner `USER_APPROVAL` unless the dependency requirement itself indicates an architecture/specification gap.
 
 ## Stage 7 — Validate the Repair Locally
 
@@ -188,6 +191,74 @@ return:
 `FIX_BLOCKED`
 
 Do not continue consuming tokens with repeated speculative fixes.
+
+## Blocked Output Contract
+
+Whenever this workflow cannot safely continue, the blocked response must contain these fields:
+
+### Blocking issue
+
+State exactly what is missing, conflicting, unsafe, or unresolved.
+
+### Owner
+
+Use exactly one of:
+
+- `PRODUCT`
+- `ARCHITECTURE`
+- `PROJECT_INIT`
+- `SPECIFICATION`
+- `REPOSITORY`
+- `USER_APPROVAL`
+
+Choose the owner that must resolve the blocker.
+
+### Why it blocks
+
+Explain why this repair cannot safely continue without the decision, correction, approval, or repository action.
+
+### Required action
+
+State the minimum action required to unblock the workflow.
+
+Do not hide a multi-stage upstream correction behind a vague instruction.
+
+### Next command
+
+State the exact next workflow command to run after the required action is complete.
+
+Use one of:
+
+- `/prd`
+- `/architect`
+- `/project-init`
+- `/spec`
+- `/implement`
+- `/fix`
+
+Routing rules:
+
+- use owner `PRODUCT` and next command `/prd` when the failure exposes an unresolved or contradictory product requirement
+- use owner `ARCHITECTURE` and next command `/architect` when repair requires changing the approved stack, architecture boundary, persistence strategy, reliability/security guarantee, public contract outside the specification, or ADR
+- use owner `PROJECT_INIT` and next command `/project-init` when repair is blocked because repository initialization no longer matches the approved architecture
+- use owner `SPECIFICATION` and next command `/spec` when the specification or acceptance criteria are ambiguous, contradictory, or incorrect
+- use owner `REPOSITORY` and next command `/fix` when repository/environment state must be corrected before the same repair can continue
+- use owner `USER_APPROVAL` and next command `/fix` when the repair is otherwise valid but requires explicit approval, such as an unapproved dependency
+
+When an upstream correction invalidates downstream artifacts, make the required rerun path explicit:
+
+- product change: `/prd → /architect → /project-init → /spec → /implement → /verify`
+- architecture change: `/architect → /project-init → /spec → /implement → /verify`
+- project-init change: `/project-init → /spec → /implement → /verify`
+- specification change: `/spec → /implement → /verify`
+
+Do not skip required downstream regeneration after an upstream decision changes.
+
+The final line must be exactly:
+
+`FIX_BLOCKED`
+
+Do not output anything after it.
 
 ## Output Format
 
@@ -235,11 +306,9 @@ Do not output anything after it.
 
 ## Blocked Output
 
-If the issue cannot be repaired safely, return:
+If the issue cannot be repaired safely:
 
-`FIX_BLOCKED`
-
-Then report the blocking issue, reason, and minimum required decision.
+use the Blocked Output Contract.
 
 The final line must be exactly:
 
