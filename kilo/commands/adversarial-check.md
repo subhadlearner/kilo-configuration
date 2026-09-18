@@ -1,7 +1,7 @@
 ---
 description: Fresh-context adversarial challenge for high-risk architecture, specification, migration, security, or contract decisions
 agent: planner
-model: anthropic/claude-sonnet-5
+model: openai/gpt-5.6-sol
 ---
 
 # Adversarial Check Workflow
