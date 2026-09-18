@@ -474,7 +474,7 @@ For triggered decisions:
 
 1. extract the smallest decision artifact and the requirements/invariants it must satisfy
 2. if the user explicitly requested Claude Sonnet for this architecture review, delegate directly to `adversary-sonnet`; that request authorizes the specific paid invocation and no DeepSeek pass or Sol justification is required
-3. if the user explicitly requested Claude Opus, delegate directly to `adversary-opus`; that request authorizes the specific premium invocation and no DeepSeek/Sonnet pass or Sol justification is required
+3. if the user explicitly requested Claude Opus, delegate directly to `adversary-opus`; that request authorizes the specific premium invocation and no DeepSeek/Sol pass or Sol justification is required
 4. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) with artifact + contract only
 5. do not send the decision author's rationale or preferred conclusion
 6. the GPT-5.6 Sol planner reconciles every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
