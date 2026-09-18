@@ -42,11 +42,13 @@ The requirements, invariants, acceptance criteria, ADR constraints, or guarantee
 
 Do not include the author's preferred conclusion or reasoning narrative in the adversary input.
 
-## Stage 3 — Fresh-Context Challenge
+## Stage 3 — Default Fresh-Context Challenge
 
-Delegate to the `adversary` subagent.
+Delegate first to the `adversary` subagent (DeepSeek Flash).
 
-Its instruction is to find ways the artifact can fail the contract, not to validate the author's confidence.
+The default adversary is mandatory for an adversarial check. Its instruction is to find ways the artifact can fail the contract, not to validate the author's confidence.
+
+Do not start with Opus.
 
 ## Stage 4 — Reconcile Findings
 
@@ -63,13 +65,36 @@ For `ACTIONABLE` findings, propose or apply the correction only within the curre
 
 For `ACCEPTED_TRADEOFF`, document the consequence and why it is accepted.
 
-## Stage 5 — Bounded Recheck
+## Stage 5 — Decide Whether Premium Escalation Is Justified
 
-If the artifact materially changed, one additional fresh adversarial pass may be run.
+After reconciling the default DeepSeek findings, consider an Opus adversarial escalation only when at least one of these is true:
 
-Do not exceed two adversarial cycles automatically.
+- the decision is unusually high-risk and hard to reverse
+- failure could cause serious security, authorization, data-loss, corruption, or recovery impact
+- the decision establishes a public/external contract that is very expensive to change
+- the design contains distributed-concurrency, ordering, idempotency, or consistency guarantees that remain non-obvious
+- the default adversary surfaced conflicting/material findings that Sonnet cannot confidently reconcile
+- the architecture has major irreversible lock-in or recurring-cost consequences
 
-If substantive unresolved findings remain, escalate to the owning workflow/human rather than grinding.
+If none apply, do not use Opus.
+
+If escalation is justified:
+
+1. explain why DeepSeek + Sonnet are insufficient for this decision
+2. ask for explicit user approval
+3. only after approval, delegate to `adversary-opus`
+4. provide artifact + contract + only the unresolved material DeepSeek findings
+5. reconcile the Opus result; do not treat it as automatic authority
+
+## Stage 6 — Bounded Recheck
+
+Without Opus escalation, one additional DeepSeek adversarial pass may be run only when the artifact changed materially.
+
+Do not exceed two default adversarial cycles automatically.
+
+An approved Opus escalation replaces further automatic adversarial cycling for that decision.
+
+If substantive unresolved findings remain after the bounded process, escalate to the owning workflow/human rather than grinding.
 
 ## Output
 
