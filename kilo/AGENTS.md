@@ -188,8 +188,12 @@ Prefer managed/serverless services when they provide the best balance of reliabi
 
 ## Model Escalation
 
-Use cheaper models for routine implementation, diagnosis, repair, adversarial first-pass checks, and pre-review.
+Use cheaper models for routine implementation, diagnosis, repair, default adversarial checks, and pre-review.
 
 Use Claude Sonnet for discovery/grilling orchestration, planning, architecture, specification design, adversarial reconciliation, and senior review.
 
-Use Claude Opus only for explicitly approved, high-risk unresolved architecture decisions.
+Default adversary: DeepSeek Flash.
+
+Escalation adversary: Claude Opus, only for rare critical decisions after a DeepSeek adversarial pass and only with explicit user approval.
+
+Use Claude Opus for architecture authority or adversarial escalation only when the decision is unusually high-risk, hard to reverse, security/data-integrity sensitive, or materially unresolved.
