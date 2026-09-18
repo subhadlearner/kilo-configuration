@@ -75,6 +75,42 @@ If the user gives no model preference, use the configured default model.
 
 The user's model choice changes the intelligence provider, not the workflow's authority, permissions, acceptance criteria, or safety rules.
 
+### Workflow Model vs Adversary Model
+
+For `/architect` and `/spec`, keep two independent selections:
+
+- **workflow model** — authors and owns the architecture/specification workflow
+- **adversary model** — independently challenges a high-risk artifact when the adversarial gate is triggered
+
+A plain phrase such as `use Claude`, `use Terra`, or `use GPT` selects the **workflow model only**.
+
+It must NOT also select the adversary.
+
+The adversary defaults to DeepSeek Flash unless the user separately requests an adversary model using clear wording such as:
+
+- `for adversarial review use Opus`
+- `use Sonnet as the adversary`
+- `adversary: GPT`
+
+The workflow model that authored the artifact remains the owning model and reconciles adversarial findings.
+
+Example:
+
+```text
+/architect ... Use Claude.
+For adversarial review use Opus.
+```
+
+means:
+
+```text
+Claude Sonnet authors architecture
+→ Claude Opus adversary challenges it
+→ Claude Sonnet reconciles findings
+```
+
+Never reinterpret a workflow-model choice as an adversary-model choice.
+
 ## Cross-model escalation
 
 The primary planner is GPT-5.6 Sol.
