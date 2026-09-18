@@ -29,11 +29,23 @@ This subagent is an escalation path, not the default adversary.
 
 ## Invocation policy
 
-Invoke only after:
+There are two valid invocation paths.
 
-1. the default `adversary` (DeepSeek) has already run, and
+### User-directed direct invocation
+
+If the user explicitly selected Opus for this adversarial review:
+
+- the user's request authorizes this specific Opus invocation
+- a prior DeepSeek adversarial pass is not required
+- do not require another model to justify the user's choice
+
+### Agent-proposed escalation
+
+If Opus was not explicitly selected by the user, invoke it only when:
+
+1. a cheaper/default adversarial path has already run, and
 2. the decision is unusually high-risk, hard to reverse, or materially unresolved, and
-3. the user has explicitly approved the Opus escalation for this invocation.
+3. the user explicitly approves the proposed Opus escalation.
 
 Typical escalation candidates include:
 
@@ -46,7 +58,7 @@ Typical escalation candidates include:
 - public contracts that are expensive or impossible to change later
 - irreversible infrastructure choices with major security, lock-in, or recurring-cost consequences
 
-Do not invoke for routine architecture or specification review.
+Do not invoke Opus automatically for routine architecture or specification review.
 
 ## Input discipline
 
