@@ -186,11 +186,47 @@ Challenge unnecessary always-on or premium infrastructure.
 
 Prefer managed/serverless services when they provide the best balance of reliability, simplicity, and cost.
 
+## User-Controlled Model Selection
+
+For product-design workflows, the user may choose the model directly in the command prompt.
+
+Examples:
+
+```text
+/grill I want to build a finance platform for Indian retail investors. Grill me. Use GPT.
+
+/grill I want to build a finance platform for Indian retail investors. Grill me. Use Claude.
+
+/architect Design the approved system. Use Terra.
+
+/spec Create the next implementation specifications. Use Haiku.
+```
+
+Supported aliases:
+
+| User phrase | Model |
+| --- | --- |
+| `use GPT`, `use OpenAI`, `use Sol` | GPT-5.6 Sol |
+| `use Terra` | GPT-5.6 Terra |
+| `use Luna` | GPT-5.6 Luna |
+| `use Claude`, `use Sonnet` | Claude Sonnet 5 |
+| `use Haiku` | Claude Haiku 4.5 |
+| `use Opus` | Claude Opus 5 |
+| `use DeepSeek` | DeepSeek V4.1 Flash |
+
+An explicit model request is authoritative for that workflow invocation/session and does not require the default model to justify the choice.
+
+If the requested connected-provider model is unavailable, fail clearly and ask the user to choose an available model. Never silently fall back.
+
+Model choice never changes stage authority or safety constraints.
+
+Kilo's experimental Task Subagent Model Selection is enabled so a workflow can honor explicit user model requests when delegation is required.
+
 ## Model Routing and Escalation
 
-### Primary reasoning — GPT-5.6 Sol
+### Primary reasoning default — GPT-5.6 Sol
 
-Use GPT-5.6 Sol for:
+Use GPT-5.6 Sol by default for:
 
 - `/grill`
 - `/prd`
@@ -199,7 +235,11 @@ Use GPT-5.6 Sol for:
 - senior code review
 - reconciliation of adversarial findings
 
-Sol is the default frontier reasoning model because it is available through the user's ChatGPT subscription in Kilo and does not consume the separate Anthropic API budget.
+This is a default, not a restriction. An explicit user model choice overrides it for model-selectable workflows.
+
+### Additional OpenAI subscription choices — GPT-5.6 Terra and Luna
+
+GPT-5.6 Terra is an approved balanced reasoning/coding option between Sol and Luna. It is suitable when the user wants strong professional reasoning with less latency/compute than Sol.
 
 ### Lightweight orchestration — GPT-5.6 Luna
 
@@ -220,6 +260,12 @@ Use DeepSeek Flash for:
 - `/diagnose`
 - default adversarial checks
 - pre-review
+
+### Efficient Claude option — Claude Haiku 4.5
+
+Haiku is an approved lower-cost Claude-family choice for bounded planning/review work that fits its context window.
+
+Do not use Haiku when the required context exceeds its supported window or when the user explicitly wants Sonnet/Opus.
 
 ### Paid cross-model review — Claude Sonnet
 
