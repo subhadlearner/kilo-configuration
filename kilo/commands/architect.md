@@ -473,15 +473,29 @@ Trigger the adversarial gate for decisions involving, where applicable:
 For triggered decisions:
 
 1. extract the smallest decision artifact and the requirements/invariants it must satisfy
-2. delegate first to the default `adversary` subagent (DeepSeek Flash) with artifact + contract only
-3. do not send the decision author's rationale or preferred conclusion
-4. reconcile every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
-5. revise the architecture/ADR when a finding is valid and actionable
-6. run at most two default DeepSeek adversarial cycles, and only when the draft materially changed
+2. if the user explicitly requested Opus for this architecture review, delegate directly to `adversary-opus`; the user request is authorization for that specific invocation, no DeepSeek pass or Sonnet justification is required
+3. otherwise delegate first to the default `adversary` subagent (DeepSeek Flash) with artifact + contract only
+4. do not send the decision author's rationale or preferred conclusion
+5. reconcile every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
+6. revise the architecture/ADR when a finding is valid and actionable
+7. when using the default path, run at most two DeepSeek adversarial cycles and only when the draft materially changed; when using user-directed Opus, do not add DeepSeek automatically
 
-### Rare critical Opus adversarial escalation
+### Opus adversarial paths
 
-After the default DeepSeek adversarial pass, consider `adversary-opus` only if the decision is both material and unusually critical, such as:
+#### User-directed Opus
+
+The user may explicitly request an Opus adversarial review of the architecture or a named architecture decision.
+
+When explicitly requested:
+
+- invoke `adversary-opus` directly
+- treat the request as approval for that specific invocation
+- skip the default DeepSeek adversarial pass unless the user asks for both
+- do not require Sonnet to justify the use of Opus
+
+#### Agent-proposed rare critical escalation
+
+When the user did not request Opus, consider `adversary-opus` after the default DeepSeek adversarial pass only if the decision is both material and unusually critical, such as:
 
 - broad authentication/authorization or cross-account IAM trust
 - destructive/irreversible migration or serious data-loss/corruption risk
@@ -492,16 +506,18 @@ After the default DeepSeek adversarial pass, consider `adversary-opus` only if t
 - major irreversible platform lock-in or recurring-cost exposure
 - materially conflicting findings that remain unresolved after Sonnet reconciles the DeepSeek pass
 
-Do not invoke Opus automatically.
+Do not invoke Opus automatically when the user has not requested it.
 
-Before invoking `adversary-opus`:
+For an agent-proposed escalation:
 
 1. explain why premium escalation is justified
 2. ask for explicit user approval
 3. after approval, send artifact + contract + only unresolved material DeepSeek findings
 4. reconcile the Opus result as additional evidence, not authority
 
-If Opus is not justified or not approved, continue with the bounded DeepSeek/Sonnet process.
+For a user-directed Opus review, steps 1–2 are already satisfied by the user's explicit request.
+
+If agent-proposed Opus is not justified or not approved, continue with the bounded DeepSeek/Sonnet process.
 
 Do not invoke the adversary for ordinary low-risk choices merely to add ceremony.
 
