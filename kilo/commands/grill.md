@@ -1,7 +1,7 @@
 ---
 description: Interactively resolve ambiguous product/design decisions before PRD work
 agent: planner
-model: anthropic/claude-sonnet-5
+model: openai/gpt-5.6-sol
 ---
 
 # Requirements Grilling Workflow
