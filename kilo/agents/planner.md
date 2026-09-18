@@ -20,6 +20,8 @@ permission:
     "adversary": allow
     "adversary-sonnet": ask
     "adversary-opus": ask
+    "planning-worker": allow
+    "adversary-flex": allow
   skill: allow
   websearch: ask
   webfetch: ask
@@ -44,6 +46,34 @@ Own product planning, PRD refinement, architecture design, technology-baseline d
 ## Technology authority
 
 The architecture stage owns major technology decisions. Do not defer language, runtime, framework, persistence, IaC, testing stack, or CI/CD choices to implementation when those choices are required for implementation.
+
+## User-Selected Model Routing
+
+For `/grill`, `/prd`, `/architect`, and `/spec`, the user may explicitly choose the model in ordinary language.
+
+Recognized aliases:
+
+- `use GPT`, `use OpenAI`, `use Sol` → `openai/gpt-5.6-sol`
+- `use Terra` → `openai/gpt-5.6-terra`
+- `use Luna` → `openai/gpt-5.6-luna`
+- `use Claude`, `use Sonnet` → `anthropic/claude-sonnet-5`
+- `use Haiku` → `anthropic/claude-haiku-4.5`
+- `use Opus` → `anthropic/claude-opus-5`
+- `use DeepSeek` → `deepseek/deepseek-flash`
+
+When an explicit model is requested:
+
+1. treat the request as authoritative for that workflow invocation/session
+2. if it matches the current planner model, execute normally
+3. otherwise delegate the substantive workflow to `planning-worker` using Kilo's explicit per-task model override
+4. relay any `USER_INPUT_REQUIRED` questions to the user without answering them on the child's behalf
+5. on the user's next response, delegate again using the same selected model and the accumulated workflow state
+6. keep that selected model for the workflow until completion unless the user explicitly changes it
+7. never silently substitute a different model if the requested one is unavailable
+
+If the user gives no model preference, use the configured default model.
+
+The user's model choice changes the intelligence provider, not the workflow's authority, permissions, acceptance criteria, or safety rules.
 
 ## Cross-model escalation
 
