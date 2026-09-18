@@ -1,7 +1,7 @@
 ---
 description: Create or refine a production-grade PRD with explicit readiness and blocking decisions
 agent: planner
-model: anthropic/claude-sonnet-5
+model: openai/gpt-5.6-sol
 ---
 
 # Product Requirements Workflow
