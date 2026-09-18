@@ -57,6 +57,38 @@ Target size:
 
 If a specification would exceed the hard ceiling, split it.
 
+### Greenfield Bootstrap and CI Ownership
+
+For a greenfield project, determine whether the approved architecture requires repository/bootstrap work that does not yet exist, including where applicable:
+
+- initial application/project scaffolding
+- CI workflow implementation
+- infrastructure-as-code bootstrap
+- dependency/package configuration
+- baseline quality gates
+- baseline security/dependency scanning
+- deployment pipeline scaffolding
+
+If such work is required, create an explicit early implementation specification for it rather than assuming the repository or CI pipeline already exists.
+
+Prefer a bootstrap specification such as:
+
+`SPEC-000 — Project Bootstrap and CI`
+
+when that naming fits the project.
+
+The bootstrap specification must:
+
+- implement only the architecture-approved tooling and CI/CD approach
+- establish the build/test/quality/security gates required by later specifications
+- avoid inventing a new technology stack
+- avoid implementing unrelated product functionality
+- define deterministic acceptance criteria for the bootstrap work
+
+Later specifications that depend on CI, generated project structure, IaC foundations, or repository tooling must declare that bootstrap specification as a prerequisite.
+
+Do not treat selecting a CI provider during `/architect` or documenting it during `/project-init` as equivalent to implementing the CI pipeline.
+
 ## Stage 3 — Define Dependencies
 
 For every specification identify:
