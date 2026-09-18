@@ -140,7 +140,7 @@ Review occurs only after deterministic verification succeeds.
 Review sequence:
 
 1. DeepSeek pre-review
-2. Claude Sonnet senior review only if pre-review returns `READY_FOR_SENIOR_REVIEW`
+2. GPT-5.6 Sol senior review only if pre-review returns `READY_FOR_SENIOR_REVIEW`
 3. CI
 4. PR/merge
 5. human-approved production deployment
