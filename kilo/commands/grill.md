@@ -13,6 +13,42 @@ Do not implement code.
 
 Load and follow the global `requirements-grilling` skill.
 
+## How the User Should Invoke This Command
+
+The user does not need to pre-answer a questionnaire.
+
+A good invocation gives only the idea, current context, and any known hard constraints.
+
+Example:
+
+```text
+/grill
+
+I want to build a production-grade personal finance application for Indian retail investors.
+
+The application should help users track goals, investments, and progress over time.
+I expect the project to become large, and I want you to challenge unclear assumptions before we write the PRD.
+
+Known constraints:
+- web application
+- cost-conscious architecture
+- security and privacy matter
+- I will maintain this with a very small team
+
+Please research facts you can determine yourself and ask me only for decisions that actually require my input.
+```
+
+A shorter invocation is also valid:
+
+```text
+/grill
+
+I want to add cross-account AWS event ingestion to the system.
+Grill me until the product behavior, scope, failure expectations, security boundaries, and non-goals are clear enough for /prd.
+```
+
+Do not require the user to describe implementation architecture during grilling.
+
 ## Principle
 
 Facts are the agent's job to investigate.
