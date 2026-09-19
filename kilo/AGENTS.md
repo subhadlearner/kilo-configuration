@@ -274,7 +274,7 @@ Claude Sonnet is no longer a mandatory lifecycle model.
 Use Sonnet as an independent model-family second opinion when:
 
 - the user explicitly requests it, or
-- the Sol planner proposes a material cross-model review and the user approves the paid invocation.
+- the owning workflow model proposes a material cross-model review and the user approves the paid invocation.
 
 Typical uses include architecture/spec adversarial review, security/consistency review, or another material decision where model diversity adds value.
 
@@ -284,7 +284,7 @@ Reserve Opus for:
 
 - user-directed premium adversarial review
 - rare critical agent-proposed adversarial escalation with explicit approval
-- rare architecture-authority escalation when Sol cannot settle a high-impact decision
+- rare architecture-authority escalation when the owning architecture workflow cannot settle a high-impact decision
 
 Default adversary: DeepSeek Flash.
 Enhanced paid adversary: Claude Sonnet.
@@ -293,6 +293,21 @@ Premium adversary: Claude Opus.
 A user-directed request for Sonnet or Opus authorizes that specific invocation directly. Do not require a prior DeepSeek pass or Sol justification, and do not add another adversarial model unless the user asks.
 
 Agent-proposed Sonnet or Opus calls always require explicit user approval.
+
+## Smoke-Test Cost Policy
+
+Smoke testing must default to models that do not consume the metered Anthropic API budget.
+
+For framework/configuration smoke tests:
+
+- use GPT-5.6 Sol/Luna through the connected ChatGPT subscription when appropriate
+- use DeepSeek Flash for implementation, verification, debugging, default adversarial checks, and other high-volume execution
+- do **not** use Claude Sonnet, Claude Haiku, or Claude Opus merely to prove routing or workflow behavior
+- retain Claude routing capability for real work, but invoke Claude during smoke testing only when the user explicitly requests a paid Claude test
+- prefer negative/static validation of Claude routing where possible
+- never spend paid frontier-model budget to validate behavior that can be proven with GPT/DeepSeek or static inspection
+
+The default smoke-test objective is to validate orchestration, permissions, state transitions, and model-selection mechanics at minimum practical API cost.
 
 ## Context Quality and Cost
 

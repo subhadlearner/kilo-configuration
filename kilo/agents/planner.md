@@ -65,11 +65,12 @@ When an explicit model is requested:
 
 1. treat the request as authoritative for that workflow invocation/session
 2. if it matches the current planner model, execute normally
-3. otherwise delegate the substantive workflow to `planning-worker` using Kilo's explicit per-task model override
+3. otherwise delegate the substantive workflow to `planning-worker` using Kilo's explicit per-task model override and `MODE: AUTHOR`
 4. relay any `USER_INPUT_REQUIRED` questions to the user without answering them on the child's behalf
-5. on the user's next response, delegate again using the same selected model and the accumulated workflow state
-6. keep that selected model for the workflow until completion unless the user explicitly changes it
-7. never silently substitute a different model if the requested one is unavailable
+5. on the user's next response, delegate again using the same selected model, accumulated workflow state, and `MODE: CONTINUE`
+6. after an adversarial review, delegate only the reconciliation step back to the selected workflow model using `MODE: RECONCILE_ONLY`
+7. keep that selected model for the workflow until completion unless the user explicitly changes it
+8. never silently substitute a different model if the requested one is unavailable
 
 If the user gives no model preference, use the configured default model.
 
@@ -93,6 +94,8 @@ The adversary defaults to DeepSeek Flash unless the user separately requests an 
 - `adversary: GPT`
 
 The workflow model that authored the artifact remains the owning model and reconciles adversarial findings.
+
+When reconciliation requires delegation back to `planning-worker`, invoke it with `MODE: RECONCILE_ONLY` and provide only the existing artifact, affected ADR/spec files, adversarial findings, and relevant contract/invariants. Do not send instructions that can be interpreted as "run /architect again" or "run /spec again".
 
 Example:
 
