@@ -32,7 +32,7 @@ Do not treat free-form text outside this command as an executable smoke run.
 
 Read:
 
-- `docs/STABLE-V0.1-SMOKE-TEST-PLAN.md`
+- `kilo/smoke/STABLE-V0.1-SMOKE-TEST-PLAN.md`
 - `kilo/smoke/fixtures.json`
 - global `AGENTS.md`
 - the minimum command/agent files needed for the next smoke stage
@@ -60,7 +60,13 @@ and one-line guidance from the runbook.
 
 Filter the fixture registry to entries supporting the selected profile.
 
-If the user supplied a fixture ID:
+If the user supplied `DEFAULT`:
+
+- resolve the single registry entry whose `default_for` contains the selected profile
+- require exactly one default
+- if no unique default exists, return `SMOKE_FIXTURE_INVALID`
+
+If the user supplied a fixture ID other than `DEFAULT`:
 
 - require an exact registry match
 - require that fixture supports the selected profile
