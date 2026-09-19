@@ -136,7 +136,7 @@ Never:
 
 Every non-trivial verification run must create a new history-preserving artifact under `docs/verification/`.
 
-Reusable verification/review evidence must follow `kilo/contracts/implementation-state-evidence-v1.md`. The canonical implementation-state manifest is the authoritative repository-content identity; the fingerprint is only its compact checksum/identifier. Normal uncommitted implementation work may reach `CLEAR` only when pre/post verification canonical manifests are an exact `MATCH`. `MISMATCH` or `UNRECONSTRUCTABLE` fails closed and requires a fresh `/verify`.
+Reusable verification/review evidence must follow `kilo/contracts/implementation-state-evidence-v1.md`. The canonical implementation-state manifest is the authoritative repository-state identity and includes path, effective Git mode/type, and content/blob identity; the fingerprint is only its compact checksum/identifier. Normal uncommitted implementation work may reach `CLEAR` only when pre/post verification canonical manifests are an exact `MATCH`. `MISMATCH` or `UNRECONSTRUCTABLE` fails closed and requires a fresh `/verify`.
 
 A specification is `DONE` only when all required applicable deterministic checks and acceptance criteria have verifiable evidence.
 

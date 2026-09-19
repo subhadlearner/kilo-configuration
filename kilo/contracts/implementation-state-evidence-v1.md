@@ -60,7 +60,22 @@ In particular, these remain identity-bearing when changed:
 For each included path record:
 
 - repository-relative path using `/` as separator
+- current effective Git mode/type
 - current Git blob/content hash produced with read-only `git hash-object --no-filters`, or the literal `DELETED`
+
+Canonical Git mode/type values are:
+
+- `100644` — regular non-executable file
+- `100755` — regular executable file
+- `120000` — symbolic link
+- `160000` — gitlink/submodule
+- `DELETED` — tracked path absent from the effective current state
+
+For tracked paths, determine effective mode/type from read-only Git index/diff evidence such as `git ls-files --stage` and `git diff --raw`, accounting for unstaged mode-only changes.
+
+For untracked, non-ignored paths, determine the Git-compatible mode/type that Git would record for the current filesystem object. If regular executable state, symlink state, embedded-repository/gitlink state, or any other relevant mode/type cannot be determined reliably on the current platform, reconstruction is `UNRECONSTRUCTABLE`; do not guess.
+
+Mode/type is part of implementation identity. A content-identical change from `100644` to `100755`, or file ↔ symlink/gitlink, is a different implementation state.
 
 Do not use timestamps, file size, working-tree mtime, branch name, or commit SHA as per-path identity.
 
@@ -68,7 +83,11 @@ Do not use timestamps, file size, working-tree mtime, branch name, or commit SHA
 
 Serialize each entry exactly as:
 
-`<repository-relative-path><TAB><git-blob-hash-or-DELETED><LF>`
+`<repository-relative-path><TAB><git-mode-or-DELETED><TAB><git-blob-hash-or-DELETED><LF>`
+
+For a deleted path, serialize:
+
+`<repository-relative-path><TAB>DELETED<TAB>DELETED<LF>`
 
 Rules:
 
@@ -76,7 +95,7 @@ Rules:
 - path separator is `/`
 - preserve path case
 - one entry per path
-- TAB (U+0009) is the only field separator
+- exactly two TAB (U+0009) field separators per record
 - LF (U+000A) is the only record terminator
 - no CR characters
 - UTF-8 encoding
@@ -133,6 +152,7 @@ Return `UNRECONSTRUCTABLE` when freshness cannot be proven reliably, including w
 - required report fields are missing or malformed
 - manifest records are malformed or duplicated
 - an identity-bearing path contains TAB, CR, or LF
+- effective Git mode/type cannot be determined reliably
 - current repository state cannot be determined reliably
 
 `MISMATCH` and `UNRECONSTRUCTABLE` both fail closed and require a fresh `/verify` before review or waiver use.
