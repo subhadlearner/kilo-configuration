@@ -232,7 +232,29 @@ The smoke-run state is persisted in the disposable project under:
 docs/verification/smoke/<run-id>.md
 ```
 
+The Run ID is allocated automatically before substantive smoke execution using:
+
+```text
+SMOKE-<PROFILE>-<fixture-id>-<NNN>
+```
+
+Examples:
+
+```text
+SMOKE-FAST-fast-micro-library-001
+SMOKE-FULL-full-minimal-api-001
+SMOKE-FULL-full-minimal-api-002
+```
+
+The orchestrator scans existing run records for the selected profile/fixture, increments the highest valid three-digit suffix, creates the new run record immediately, and never overwrites an existing run.
+
+Every smoke response must repeat the active Run ID near the top.
+
 The run record, not chat history, is the continuation authority.
+
+`/smoke STATUS <run-id>` is read-only and reports progress, latest verification/review state, model/cost ledger, blockers, and the exact next action without invoking lifecycle/reviewer models.
+
+`/smoke RESUME <run-id>` reconstructs continuation from the run record plus current repository evidence and resumes from the earliest still-required or invalidated stage.
 
 ## 2.3 Fixture versus architecture authority
 
