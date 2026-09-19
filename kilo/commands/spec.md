@@ -225,6 +225,12 @@ Define relevant:
 - secrets
 - sensitive data handling
 - abuse controls
+- applicable OWASP Top 10:2025 risks
+- feature-specific security invariants and negative cases
+- required executable security evidence
+- any project-approved non-waivable security conditions
+
+Do not claim broad OWASP or regulatory compliance. Define objective, testable security criteria.
 
 ### Observability
 
@@ -287,7 +293,16 @@ Do not require tests against private implementation details merely to increase c
 
 ### Verification Requirements
 
-Identify the deterministic checks expected from `/verify`.
+Identify the deterministic checks expected from `/verify`, including applicable:
+
+- build/test/static-analysis checks
+- dependency vulnerability checks
+- secret scanning
+- SAST/IaC/container security checks
+- feature-specific security tests
+- acceptance-criteria evidence
+
+State which security checks are required versus not applicable.
 
 ### Definition of Done
 
@@ -295,9 +310,12 @@ A specification is not complete until:
 
 - implementation is complete
 - required tests exist
-- `/verify` returns `DONE`
-- `/review` passes
+- factual verification evidence exists under `docs/verification/`
+- `/verify` returns `DONE`, or a separate valid human-authorized waiver establishes `CLEAR_WITH_EXCEPTION`
+- `/review` passes with any active waiver visible to reviewers
 - CI passes
+
+A waiver does not change a `NOT_DONE` verification result to `DONE`.
 
 ## Stage 5 — Parallelism and Branch Safety
 
