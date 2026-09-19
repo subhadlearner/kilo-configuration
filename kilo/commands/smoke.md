@@ -88,7 +88,7 @@ Examples:
 /smoke FULL full-minimal-api
 ```
 
-## Stage 4 — Establish or resume smoke state
+## Stage 4 — Allocate, persist, resume, or inspect smoke state
 
 Smoke progress belongs in the target disposable project under:
 
@@ -98,6 +98,45 @@ docs/verification/smoke/<run-id>.md
 
 This location is inside the Contract-v1 evidence exclusion set.
 
+### New-run ID generation
+
+The `/smoke` orchestrator generates the Run ID automatically. The user never supplies or invents one for a new run.
+
+Canonical format:
+
+```text
+SMOKE-<PROFILE>-<fixture-id>-<NNN>
+```
+
+Examples:
+
+```text
+SMOKE-FAST-fast-micro-library-001
+SMOKE-FULL-full-minimal-api-001
+SMOKE-FULL-full-minimal-api-002
+```
+
+Generation algorithm:
+
+1. normalize profile to uppercase `FAST` or `FULL`
+2. use the exact selected fixture ID from `kilo/smoke/fixtures.json`
+3. inspect `docs/verification/smoke/` for existing records matching:
+   `SMOKE-<PROFILE>-<fixture-id>-*.md`
+4. parse only valid three-digit numeric suffixes
+5. choose one greater than the highest existing suffix; use `001` when none exist
+6. before any substantive smoke stage or child-model invocation, create the run record immediately
+7. if the candidate filename already exists, increment and retry; never overwrite an existing run record
+
+Run IDs are identifiers, not chronology authority. The run record's explicit timestamps and repository evidence remain authoritative.
+
+If the run record cannot be created safely, stop with:
+
+`SMOKE_BLOCKED`
+
+Do not continue with an unpersisted anonymous run.
+
+### Required smoke-run record
+
 A smoke-run record must contain:
 
 - run ID
@@ -106,26 +145,146 @@ A smoke-run record must contain:
 - source/template repository
 - release/tag and exact configuration SHA
 - target project branch/worktree
+- baseline HEAD
 - started-at timestamp
+- last-updated timestamp
 - current stage
+- current scenario
+- total required scenario count for the selected profile
+- completed scenario count
 - completed scenarios
+- pending scenarios
 - skipped scenarios with reason
 - current authoritative artifact paths
 - current applicable verification/review/diagnosis/waiver evidence
+- latest verification result, delivery gate, and freshness when available
+- latest review result when available
 - checkpoint notes
-- model invocation ledger
-- observed cost/usage when available
-- Claude invocation count
+- model invocation ledger by model/workflow
+- observed token/cost usage when available
+- Claude invocation count and spend when available
+- blockers / required user action
 - defects
 - final result
 
 Do not rely on prior chat history to resume.
 
-For `RESUME`, reconstruct state from this file and the repository.
+### New-run acknowledgement
 
-For `STATUS`, report state only. Do not mutate or invoke models.
+Immediately after allocating the ID, report at minimum:
 
-If a supplied run ID cannot be reconstructed safely, return:
+```text
+Run ID: <run-id>
+Profile: <FAST|FULL>
+Fixture: <fixture-id>
+Release: <tag>@<configuration-sha>
+Current Stage: <stage>
+Progress: <completed>/<required>
+Claude Calls: 0
+Next: <next stage/scenario>
+```
+
+Every later `/smoke` response for this run must repeat:
+
+```text
+Run ID: <run-id>
+```
+
+near the top.
+
+### RESUME
+
+For:
+
+```text
+/smoke RESUME <run-id>
+```
+
+reconstruct state from the exact run record and current repository evidence.
+
+Before continuing:
+
+- validate profile and fixture from the run record
+- validate the target branch/worktree
+- identify completed, pending, blocked, and invalidated scenarios
+- re-evaluate whether the recorded next stage is still correct
+- never trust chat history over repository state
+
+Then continue from the earliest required incomplete/invalidated stage.
+
+### STATUS
+
+For:
+
+```text
+/smoke STATUS <run-id>
+```
+
+perform a read-only status operation.
+
+Do not:
+
+- mutate repository files
+- inject failures
+- execute lifecycle stages
+- invoke child/subagent models
+- alter the run record
+
+Read the run record plus only the minimum repository evidence needed to detect obvious drift.
+
+Return this fixed status shape:
+
+```text
+Smoke Run Status
+
+Run ID: <run-id>
+State: <IN_PROGRESS|WAITING_FOR_USER|BLOCKED|PASS|PASS_WITH_ENVIRONMENT_LIMITATION|FAIL>
+Profile: <FAST|FULL>
+Fixture: <fixture-id>
+Release: <tag>@<configuration-sha>
+Target: <branch/worktree>
+Baseline HEAD: <sha>
+
+Current Stage: <workflow-stage>
+Current Scenario: <scenario-id-or-name>
+Progress: <completed>/<required> required scenarios
+Skipped: <count> (only policy-approved/optional scenarios)
+
+Latest Verification:
+- Result: <DONE|NOT_DONE|N/A>
+- Delivery Gate: <CLEAR|BLOCKED|CLEAR_WITH_EXCEPTION|N/A>
+- Freshness: <MATCH|MISMATCH|UNRECONSTRUCTABLE|N/A>
+
+Latest Review: <APPROVE|REQUEST CHANGES|CHANGES_REQUIRED|NOT_RUN|N/A>
+
+Model Ledger:
+- GPT-5.6 Sol: <count>
+- GPT-5.6 Luna: <count>
+- DeepSeek Flash: <count>
+- Claude: <count>
+
+Observed Cost:
+- DeepSeek: <value-or-UNAVAILABLE>
+- Claude: <value-or-0/UNAVAILABLE>
+- Other: <value-or-UNAVAILABLE>
+
+Blocker / User Action: <none-or-exact-action>
+Next: <next required stage/scenario-or-COMPLETE>
+Last Updated: <timestamp>
+```
+
+If repository evidence shows that the recorded state has drifted, append:
+
+```text
+Drift Detected: YES
+Required Action: /smoke RESUME <run-id>
+```
+
+Do not silently repair drift during `STATUS`.
+
+### Missing/unusable run record
+
+If a supplied run ID does not exist, is malformed, or cannot be reconstructed safely, return:
 
 `SMOKE_RUN_UNRECONSTRUCTABLE`
 
@@ -381,11 +540,14 @@ Persist detailed evidence in the smoke-run record and normal workflow artifacts.
 
 In chat report only:
 
-- run ID
+- run ID, repeated near the top on every response
 - profile + fixture
 - stage/scenario just completed
+- progress count
 - PASS/FAIL/BLOCKED
 - next stage
 - material model/cost note
 - required user action, if any
 - final status token
+
+Never make the user search prior chat history to discover the active Run ID.
