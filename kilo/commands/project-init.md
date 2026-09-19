@@ -215,7 +215,7 @@ Also ensure the repository contains:
 
 Populate it from the global canonical contract:
 
-`kilo/contracts/implementation-state-evidence-v1.md`
+installed global `contracts/implementation-state-evidence-v1.md`
 
 Copy the contract verbatim. Do not summarize, reinterpret, or maintain an independently rewritten variant.
 
