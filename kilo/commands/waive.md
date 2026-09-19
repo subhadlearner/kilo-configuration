@@ -109,7 +109,7 @@ The waiver must identify:
 - expiry
 - remediation reference
 
-Before a waiver can be created or reused, reconstruct current implementation state under Contract v1. Freshness must be `MATCH`. Canonical-manifest equality is authoritative; fingerprint equality alone is insufficient.
+Before a waiver can be created or reused, reconstruct current implementation state under Contract v1, including Git mode/type identity. Freshness must be `MATCH`. Canonical-manifest equality is authoritative; fingerprint equality alone is insufficient.
 
 If required evidence is missing/malformed, the base HEAD is unavailable, or reconstruction cannot be proven reliably, freshness is `UNRECONSTRUCTABLE` and the waiver must fail closed.
 
