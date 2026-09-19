@@ -116,9 +116,13 @@ If the tag is intentionally moved after documentation-only additions, record the
 
 Use a disposable branch, clone, or worktree based on the reusable project template.
 
-Default source repository:
+Each fixture declares its own `source_repository` in `smoke/fixtures.json`.
+
+The current Stable-v0.1 fixtures all use:
 
 `subhadlearner/production-ai-project`
+
+Do not assume future fixtures use the same repository.
 
 Recommended branch pattern:
 
@@ -288,6 +292,48 @@ The fixture does **not** choose:
 Those remain owned by `/architect`.
 
 A fixture test budget never permits skipping a genuinely applicable check required by the approved architecture/specification.
+
+---
+
+## 2.4 Canonical scenario IDs
+
+`smoke/profiles.json` is authoritative for which scenarios are required or optional for each profile.
+
+The runbook uses these stable scenario IDs for persisted progress:
+
+| Scenario ID | Runbook coverage / acceptance meaning |
+| --- | --- |
+| `static-release-gate` | Static command, routing, policy, evidence-contract, and cost-policy invariants pass |
+| `grill` | Discovery can complete/block/resume without repeating settled decisions |
+| `prd` | PRD readiness/blocking and product-authority routing work |
+| `architect` | Architecture readiness/blocking, cost treatment, and authority routing work |
+| `project-init-contract-propagation` | Project init creates required directories and synchronizes the evidence contract |
+| `spec` | Specification readiness/blocking and upstream routing work |
+| `implement` | Approved spec implementation reaches ready-for-verify without overstepping authority |
+| `first-uncommitted-verify` | Fully uncommitted first-spec implementation reaches deterministic verification |
+| `review-before-commit` | Fresh uncommitted implementation can enter the normal review pipeline |
+| `identical-commit-freshness` | Committing identical verified contents preserves `MATCH` |
+| `content-mutation-stale-evidence` | Identity-bearing content change blocks review with `MISMATCH` |
+| `mode-type-identity` | Git mode/type change produces `MISMATCH` or valid platform `UNRECONSTRUCTABLE` |
+| `verification-mutation` | Verification-time implementation mutation blocks delivery |
+| `direct-fix-loop` | `NOT_DONE → /fix → /verify → /review` completes correctly |
+| `diagnose-fix-loop` | `NOT_DONE → /diagnose → /fix → /verify → /review` completes correctly |
+| `waive-review-loop` | Safe waivable `NOT_DONE` becomes only `CLEAR_WITH_EXCEPTION` and can enter review |
+| `stale-waiver` | Implementation identity change invalidates waiver applicability |
+| `malformed-evidence` | Malformed/unavailable evidence fails closed as `UNRECONSTRUCTABLE` |
+| `fail-closed-evidence` | FAST profile proves at least one stale/malformed/unreconstructable evidence case stops review |
+| `evidence-exclusion` | Evidence-only paths do not change implementation identity; specs/architecture/code/config do |
+| `adversarial-reconcile-only` | Material findings reconcile through `RECONCILE_ONLY`, not full re-authoring |
+| `arbitrary-stage-resume` | Fresh session resumes from persisted repository state without chat memory |
+| `upstream-rerouting` | Blockers route to the correct upstream authority and regenerate affected downstream work |
+| `pre-review-blocker` | Blocking DeepSeek pre-review persists evidence and skips senior review |
+| `static-model-routing` | FAST profile validates configured model routes without unnecessary paid runtime calls |
+| `static-claude-routing` | FULL profile validates Claude routes statically with zero default Claude calls |
+| `paid-claude-runtime` | Optional explicitly authorized paid cross-model runtime check |
+
+A scenario is complete only when the run record contains evidence satisfying its mapped acceptance meaning.
+
+Do not count a phase merely because its command was invoked.
 
 ---
 
@@ -2082,6 +2128,8 @@ Expected flow:
 → DIAGNOSIS_READY
 → /fix
 → /verify
+→ DONE + CLEAR + MATCH
+→ /review
 ```
 
 Diagnosis persists under:
@@ -2196,6 +2244,24 @@ Verification Result: DONE
 Delivery Gate: CLEAR
 Freshness: MATCH
 ```
+
+### Step 5 — review the repaired state
+
+Run:
+
+```text
+/review
+```
+
+Expected behavior:
+
+- review selects the new applicable verification report
+- freshness remains `MATCH`
+- pre-review executes normally
+- senior review runs only when pre-review returns `READY_FOR_SENIOR_REVIEW`
+- the resulting review artifact is persisted
+
+The `diagnose-fix-loop` scenario is complete only after the repaired, freshly verified state successfully re-enters the review pipeline.
 
 ### Negative routing check
 
