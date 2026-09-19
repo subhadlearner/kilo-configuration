@@ -136,7 +136,7 @@ Never:
 
 Every non-trivial verification run must create a new history-preserving artifact under `docs/verification/`.
 
-A reusable review gate must be tied to a stable implementation revision. The verification report records the branch and verified implementation HEAD SHA. If non-evidence source/test/spec/configuration changes are uncommitted when verification runs, checks may still produce a factual result, but the delivery gate remains `BLOCKED` until the intended changes are committed and `/verify` is rerun.
+A reusable review gate must be tied to a stable implementation revision. The verification report records the branch and verified implementation HEAD SHA, and `/verify` rechecks repository state after executing checks. If non-evidence source/test/spec/configuration changes are uncommitted before verification, or verification commands create such changes, checks may still produce a factual result, but the delivery gate remains `BLOCKED` until the intended changes are committed and `/verify` is rerun.
 
 A specification is `DONE` only when all required applicable deterministic checks and acceptance criteria have verifiable evidence.
 
