@@ -2027,14 +2027,15 @@ When an upstream stage changes, rerun required downstream stages.
 
 ## 20.1 Concrete failure recipe — deterministic implementation defect
 
-Use this recipe when you want to prove the shortest repair loop:
+Use this recipe when you want to prove the shortest repair loop through review:
 
 ```text
 /verify
 → NOT_DONE
 → /fix
 → /verify
-→ DONE + CLEAR
+→ DONE + CLEAR + MATCH
+→ /review
 ```
 
 ### Safe fixture
@@ -2108,6 +2109,21 @@ Verification Result: DONE
 Delivery Gate: CLEAR
 Freshness: MATCH
 ```
+
+Then run:
+
+```text
+/review
+```
+
+Expected:
+
+- the newly created verification report is selected
+- freshness remains `MATCH`
+- the review pipeline runs normally
+- the review artifact is persisted
+
+The `direct-fix-loop` scenario is complete only after the repaired, freshly verified state re-enters the review pipeline.
 
 ### Pass condition
 
