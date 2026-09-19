@@ -538,10 +538,28 @@ For triggered decisions:
 4. otherwise delegate to the default `adversary` subagent (DeepSeek Flash)
 5. do not send the decision author's rationale or preferred conclusion
 6. the **owning architecture workflow model** reconciles every material finding as contract/context misread, actionable defect, accepted trade-off, or unsupported/noise
-7. revise the architecture/ADR when a finding is valid and actionable
-8. when using the default path, run at most two DeepSeek adversarial cycles and only when the draft materially changed; when using a user-directed adversary, do not add another adversary automatically
+7. when the owning workflow model is running through `planning-worker`, invoke it with `MODE: RECONCILE_ONLY`; supply only the existing architecture path, affected ADR path(s), adversarial findings, and relevant contract/invariants
+8. in reconciliation, do not restart Stages 1–10, re-read all upstream context, regenerate the architecture, or recreate unaffected ADRs
+9. revise only the architecture/ADR sections required by valid findings
+10. when using the default path, run at most one additional DeepSeek adversarial cycle, and only if the targeted reconciliation materially changed the challenged decision; when using a user-directed adversary, do not add another adversary automatically
 
 A plain workflow-model request such as `use Claude` or `use Terra` must never be interpreted as an adversary override.
+
+### Reconciliation Cost and Scope Guardrail
+
+Adversarial reconciliation is a **delta review**, not a second architecture run.
+
+Expected reconciliation activity is normally limited to:
+
+- read the challenged architecture section
+- read only affected ADR(s)
+- inspect adversarial findings
+- make targeted edits if required
+- report the disposition of each finding
+
+Do not reload the whole repository, all discovery/PRD context, all skills, or all architecture files merely because an adversarial pass completed.
+
+Broaden context only when a specific finding cannot be resolved from the challenged artifact and its contract.
 
 ### Claude adversarial escalation paths
 
