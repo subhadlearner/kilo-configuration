@@ -237,6 +237,7 @@ C:\Users\<username>\.config\kilo
 ├── agents\
 ├── commands\
 ├── contracts\
+├── smoke\
 └── skills\
 ```
 
@@ -371,7 +372,7 @@ Common invocations:
 /smoke FULL DEFAULT
 /smoke FAST fast-micro-library
 /smoke FULL full-minimal-api
-/smoke FULL full-sqlite-api
+/smoke FULL full-local-persistence-api
 /smoke RESUME <run-id>
 /smoke STATUS <run-id>
 ```
@@ -382,6 +383,7 @@ Approved fixture metadata lives in:
 
 ```text
 kilo/smoke/fixtures.json
+kilo/smoke/profiles.json
 ```
 
 Current fixtures:
@@ -390,7 +392,7 @@ Current fixtures:
 | --- | --- | --- |
 | `fast-micro-library` | FAST | Cheapest lifecycle/evidence/fix smoke fixture |
 | `full-minimal-api` | FULL | Default complete workflow fixture |
-| `full-sqlite-api` | FULL | Optional persistence-oriented validation |
+| `full-local-persistence-api` | FULL | Optional local-persistence-oriented validation |
 
 Fixture choice controls the disposable product shape and default test budget. It does **not** choose the implementation technology; `/architect` retains that authority.
 
