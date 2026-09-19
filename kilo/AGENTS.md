@@ -8,7 +8,7 @@ Produce production-grade software with minimum unnecessary complexity, strong en
 
 For normal feature work, use this lifecycle:
 
-`/grill (optional) → /prd → /architect → /project-init → /spec → /implement → /verify → /review`
+`/grill (optional) → /prd → /architect → /project-init → /spec → /implement → /verify → CLEAR or CLEAR_WITH_EXCEPTION → /review`
 
 Use `/grill` before `/prd` when the idea is ambiguous, unusually large, high-stakes, or contains many coupled product decisions. Skip it for clear, bounded work.
 
@@ -136,6 +136,8 @@ Never:
 
 Every non-trivial verification run must create a new history-preserving artifact under `docs/verification/`.
 
+A reusable review gate must be tied to a stable implementation revision. The verification report records the branch and verified implementation HEAD SHA. If non-evidence source/test/spec/configuration changes are uncommitted when verification runs, checks may still produce a factual result, but the delivery gate remains `BLOCKED` until the intended changes are committed and `/verify` is rerun.
+
 A specification is `DONE` only when all required applicable deterministic checks and acceptance criteria have verifiable evidence.
 
 A failed verification remains `NOT_DONE`. Never manually rewrite it to `DONE`.
@@ -148,7 +150,7 @@ Waivers must be scoped, human-authorized, time-bounded, and tied to the exact ve
 
 ## Review
 
-Review occurs only when the delivery gate is `CLEAR` or `CLEAR_WITH_EXCEPTION`.
+Review occurs only when the delivery gate is `CLEAR` or `CLEAR_WITH_EXCEPTION` **and** the applicable verification evidence is fresh for the current specification/change, branch, HEAD revision, and non-evidence working-tree state.
 
 Every non-trivial `/review` run must create a new history-preserving artifact under `docs/reviews/`.
 
@@ -158,7 +160,7 @@ When senior review runs, the same review-run artifact records both the complete 
 
 Completed prior review reports must not be overwritten. Subsequent review runs create new numbered artifacts.
 
-`/fix` should consume the latest applicable persisted review report rather than relying on chat history.
+`/fix` should consume the latest applicable persisted review/verification/diagnosis evidence for the requested specification/change and branch rather than the newest artifact globally or chat history.
 
 For `CLEAR_WITH_EXCEPTION`, reviewers must receive the original failed verification evidence plus the active waiver and may still reject the change if the accepted risk is unsafe or out of policy.
 
