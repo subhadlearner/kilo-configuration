@@ -130,11 +130,22 @@ Do not mutate protected `main`.
 
 The implementation fixture should be deliberately small. The goal is to test the workflow, not application complexity.
 
-Approved fixture definitions are version-controlled in:
+Approved fixture definitions and profile scenario registries are version-controlled in the source repository as:
 
 ```text
 kilo/smoke/fixtures.json
+kilo/smoke/profiles.json
 ```
+
+When installed as the global Kilo configuration, runtime lookups use:
+
+```text
+smoke/fixtures.json
+smoke/profiles.json
+smoke/STABLE-V0.1-SMOKE-TEST-PLAN.md
+```
+
+Do not require the `kilo-configuration` repository checkout to exist at runtime.
 
 Do not invent an additional fixture during an automated smoke run.
 
@@ -183,14 +194,14 @@ Default application-test budget:
 - at most 1 lightweight in-process integration test
 - no E2E suite
 
-### FULL — `full-sqlite-api` (optional)
+### FULL — `full-local-persistence-api` (optional)
 
 Use only when the framework change being validated materially touches persistence/database guidance, project-init persistence setup, or integration verification.
 
 Default application-test budget:
 
 - 1–2 unit tests
-- 1 focused local SQLite-backed integration test
+- 1 focused embedded/local persistence-backed integration test
 - no E2E suite
 
 This is intentionally not the FULL default because it costs more tokens and runtime.
@@ -209,7 +220,7 @@ Explicit fixture selection:
 ```text
 /smoke FAST fast-micro-library
 /smoke FULL full-minimal-api
-/smoke FULL full-sqlite-api
+/smoke FULL full-local-persistence-api
 ```
 
 If the profile is supplied without a fixture, the orchestrator must show the compatible registry entries and request a choice.
@@ -2758,11 +2769,18 @@ CLAUDE_RUNTIME_TEST: NOT_RUN_BY_POLICY
 
 # 30. Required Smoke-Test Report
 
-Persist execution evidence in the disposable project, for example:
+The authoritative smoke-run report is the run-state record itself:
 
 ```text
-docs/verification/SMOKE-STABLE-V0.1-001.md
+docs/verification/smoke/<run-id>.md
 ```
+
+Do not create a second top-level `docs/verification/SMOKE-*.md` report containing duplicate run state.
+
+The run-state record is both:
+
+- the restart/resume authority for `/smoke`
+- the final scenario/cost/outcome report when the run completes
 
 Include:
 
