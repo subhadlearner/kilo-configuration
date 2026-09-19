@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "registry_version": "1",
   "description": "Approved disposable project flavours for Kilo workflow smoke testing.",
   "source_repository": "subhadlearner/production-ai-project",
