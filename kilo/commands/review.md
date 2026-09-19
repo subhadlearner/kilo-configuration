@@ -184,7 +184,7 @@ The report must contain:
 - review ID
 - specification/change
 - branch
-- commit SHA when available
+- reviewed implementation commit SHA
 - date/time when available from the environment
 
 ### Verification Input
