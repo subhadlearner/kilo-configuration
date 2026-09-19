@@ -58,6 +58,7 @@ kilo/
 ├── agents/
 ├── commands/
 ├── contracts/
+├── smoke/
 └── skills/
 ```
 
@@ -91,6 +92,7 @@ Global slash-command workflows such as:
 - `/fix`
 - `/diagnose`
 - `/adversarial-check`
+- `/smoke`
 
 ### `agents/`
 
@@ -357,6 +359,48 @@ FULL_SMOKE
 ```
 
 because this release establishes the baseline framework behavior.
+
+### Running smoke tests
+
+Smoke testing is executable through the global `/smoke` command.
+
+Common invocations:
+
+```text
+/smoke FAST DEFAULT
+/smoke FULL DEFAULT
+/smoke FAST fast-micro-library
+/smoke FULL full-minimal-api
+/smoke FULL full-sqlite-api
+/smoke RESUME <run-id>
+/smoke STATUS <run-id>
+```
+
+If no fixture is supplied, `/smoke` shows the compatible approved fixture list and asks for a selection rather than inventing one.
+
+Approved fixture metadata lives in:
+
+```text
+kilo/smoke/fixtures.json
+```
+
+Current fixtures:
+
+| Fixture | Profile | Purpose |
+| --- | --- | --- |
+| `fast-micro-library` | FAST | Cheapest lifecycle/evidence/fix smoke fixture |
+| `full-minimal-api` | FULL | Default complete workflow fixture |
+| `full-sqlite-api` | FULL | Optional persistence-oriented validation |
+
+Fixture choice controls the disposable product shape and default test budget. It does **not** choose the implementation technology; `/architect` retains that authority.
+
+A smoke run persists restartable state in the disposable target project under:
+
+```text
+docs/verification/smoke/<run-id>.md
+```
+
+This allows `/smoke RESUME <run-id>` to continue after user input, interruption, or a later chat session without depending on conversation memory.
 
 ### Smoke-test cost discipline
 
