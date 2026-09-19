@@ -27,6 +27,7 @@
       "git log*": "allow",
       "git ls-files*": "allow",
       "git hash-object --no-filters *": "allow",
+      "git hash-object --stdin*": "allow",
       "dotnet build*": "allow",
       "dotnet test*": "allow",
       "dotnet format --verify-no-changes*": "allow",
