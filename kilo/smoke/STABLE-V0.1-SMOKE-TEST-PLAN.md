@@ -139,6 +139,7 @@ Approved fixture definitions and profile scenario registries are version-control
 ```text
 kilo/smoke/fixtures.json
 kilo/smoke/profiles.json
+kilo/smoke/failure-recipes.json
 ```
 
 When installed as the global Kilo configuration, runtime lookups use:
@@ -146,6 +147,7 @@ When installed as the global Kilo configuration, runtime lookups use:
 ```text
 smoke/fixtures.json
 smoke/profiles.json
+smoke/failure-recipes.json
 smoke/STABLE-V0.1-SMOKE-TEST-PLAN.md
 ```
 
