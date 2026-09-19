@@ -12,7 +12,7 @@ Stable v0.1 intentionally keeps the smoke-fixture registry small:
 
 - `fast-micro-library`
 - `full-minimal-api`
-- `full-sqlite-api`
+- `full-local-persistence-api`
 
 That is deliberate.
 
