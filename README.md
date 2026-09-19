@@ -405,7 +405,7 @@ docs/verification/smoke/<run-id>.md
 The Run ID is generated automatically by `/smoke` using:
 
 ```text
-SMOKE-<PROFILE>-<fixture-id>-<NNN>
+SMOKE-<PROFILE>-<fixture-id>-<SEQ>
 ```
 
 Examples:
