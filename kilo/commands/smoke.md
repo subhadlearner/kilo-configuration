@@ -89,7 +89,27 @@ Examples:
 /smoke FULL full-minimal-api
 ```
 
-## Stage 4 — Allocate, persist, resume, or inspect smoke state
+## Stage 4 — Prepare disposable project safely
+
+Use the selected registry fixture and its product brief.
+
+The configured source repository is a template/baseline, not architecture authority.
+
+For a new run:
+
+- require a disposable branch/worktree/clone
+- never mutate protected `main`, `master`, `develop`, or `release`
+- never discard unrelated changes
+- never force-reset or clean a non-disposable repository
+- record the exact baseline HEAD
+
+If safe disposable state cannot be established, return:
+
+`SMOKE_BLOCKED`
+
+with the exact repository action required.
+
+## Stage 5 — Allocate, persist, resume, or inspect smoke state
 
 Smoke progress belongs in the target disposable project under:
 
@@ -288,26 +308,6 @@ Do not silently repair drift during `STATUS`.
 If a supplied run ID does not exist, is malformed, or cannot be reconstructed safely, return:
 
 `SMOKE_RUN_UNRECONSTRUCTABLE`
-
-## Stage 5 — Prepare disposable project safely
-
-Use the selected registry fixture and its product brief.
-
-The configured source repository is a template/baseline, not architecture authority.
-
-For a new run:
-
-- require a disposable branch/worktree/clone
-- never mutate protected `main`, `master`, `develop`, or `release`
-- never discard unrelated changes
-- never force-reset or clean a non-disposable repository
-- record the exact baseline HEAD
-
-If safe disposable state cannot be established, return:
-
-`SMOKE_BLOCKED`
-
-with the exact repository action required.
 
 ## Stage 6 — Determine the correct entry point
 
