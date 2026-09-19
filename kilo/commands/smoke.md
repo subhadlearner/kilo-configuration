@@ -1,6 +1,6 @@
 ---
 description: Orchestrate restartable FAST or FULL workflow smoke testing using approved disposable fixture projects
-agent: planner
+agent: smoke-orchestrator
 model: openai/gpt-5.6-luna
 ---
 
