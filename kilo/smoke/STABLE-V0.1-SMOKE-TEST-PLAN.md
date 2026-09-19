@@ -250,7 +250,7 @@ docs/verification/smoke/<run-id>.md
 The Run ID is allocated automatically before substantive smoke execution using:
 
 ```text
-SMOKE-<PROFILE>-<fixture-id>-<NNN>
+SMOKE-<PROFILE>-<fixture-id>-<SEQ>
 ```
 
 Examples:
