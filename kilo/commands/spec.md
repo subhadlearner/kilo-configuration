@@ -330,10 +330,26 @@ For each triggered specification:
 3. if the user selected an adversary, delegate to `adversary-flex` with the explicit per-task model override for that model
 4. otherwise delegate to the default `adversary` subagent (DeepSeek Flash)
 5. the **owning specification workflow model** reconciles findings against the approved PRD/architecture
-6. correct the specification when a finding exposes a real ambiguity, missing failure case, or unverifiable acceptance criterion
-7. when using the default path, stop after at most two materially changed DeepSeek adversarial cycles; when using a user-directed adversary, do not add another adversary automatically
+6. when the owning workflow model is running through `planning-worker`, invoke it with `MODE: RECONCILE_ONLY`; supply only the existing spec path, adversarial findings, relevant architecture/ADR references needed by those findings, and the challenged contract/invariants
+7. do not restart specification decomposition, reload unrelated PRD/architecture material, or recreate unaffected specifications
+8. correct only the specification sections required by valid findings
+9. when using the default path, run at most one additional DeepSeek adversarial cycle, and only if targeted reconciliation materially changed the challenged behavior; when using a user-directed adversary, do not add another adversary automatically
 
 A plain workflow-model request such as `use Claude` must never be interpreted as an adversary override.
+
+### Reconciliation Cost and Scope Guardrail
+
+Adversarial reconciliation is a focused delta pass.
+
+Normally it should:
+
+- read the challenged specification
+- read only architecture/ADR material necessary to adjudicate the finding
+- evaluate the findings
+- make targeted edits
+- report finding dispositions
+
+It must not perform a second full `/spec` run.
 
 After a default DeepSeek pass, the owning specification workflow may propose `adversary-sonnet` when material uncertainty remains and an independent model-family review would materially improve confidence.
 
