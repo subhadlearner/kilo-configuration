@@ -32,8 +32,9 @@ Do not treat free-form text outside this command as an executable smoke run.
 
 Read:
 
-- `kilo/smoke/STABLE-V0.1-SMOKE-TEST-PLAN.md`
-- `kilo/smoke/fixtures.json`
+- installed global `smoke/STABLE-V0.1-SMOKE-TEST-PLAN.md`
+- installed global `smoke/fixtures.json`
+- installed global `smoke/profiles.json`
 - global `AGENTS.md`
 - the minimum command/agent files needed for the next smoke stage
 
@@ -119,7 +120,7 @@ SMOKE-FULL-full-minimal-api-002
 Generation algorithm:
 
 1. normalize profile to uppercase `FAST` or `FULL`
-2. use the exact selected fixture ID from `kilo/smoke/fixtures.json`
+2. use the exact selected fixture ID from the installed global `smoke/fixtures.json`
 3. inspect `docs/verification/smoke/` for existing records matching:
    `SMOKE-<PROFILE>-<fixture-id>-*.md`
 4. parse only valid three-digit numeric suffixes
@@ -150,8 +151,8 @@ A smoke-run record must contain:
 - last-updated timestamp
 - current stage
 - current scenario
-- total required scenario count for the selected profile
-- completed scenario count
+- total required scenario count loaded from `smoke/profiles.json`
+- completed scenario count derived from persisted completed required scenario IDs
 - completed scenarios
 - pending scenarios
 - skipped scenarios with reason
@@ -413,6 +414,20 @@ Do not use Claude during smoke testing unless the user explicitly authorizes tha
 
 ## Stage 8 — Profile scenario selection
 
+Load the selected profile definition from installed global `smoke/profiles.json`.
+
+The profile registry is authoritative for:
+
+- required scenario IDs
+- optional scenario IDs
+- denominator used by `Progress: <completed>/<required>`
+
+Do not invent, renumber, or infer the required scenario count from prose.
+
+Mark a required scenario complete only when its acceptance condition has actually been evidenced and persisted in the run record.
+
+If a required scenario is skipped because of an allowed environment limitation, record it separately and use the profile's environment-limitation completion semantics; do not count it as silently completed.
+
 ### FAST
 
 Run only the FAST_SMOKE scenarios defined by the runbook.
@@ -463,10 +478,20 @@ Never mark a genuinely applicable required check `NOT_APPLICABLE` merely to save
 
 Use only the failure recipes permitted by the selected fixture registry entry.
 
-Before injecting a failure:
+The Luna smoke orchestrator must not directly author implementation defects.
 
-- record the clean checkpoint/state
+Delegate failure injection and any smoke-only fixture mutation to `smoke-executor` using:
+
+```text
+ACTION: INJECT_FAILURE
+RECIPE: <registered-recipe-id>
+```
+
+Before injection:
+
+- persist the clean checkpoint/state
 - state the expected workflow route
+- require the recipe ID to be listed in the selected fixture
 - change only what is necessary for that scenario
 
 Never use a security, auth, data-integrity, destructive, or vulnerability failure as the trivial waiver recipe.
