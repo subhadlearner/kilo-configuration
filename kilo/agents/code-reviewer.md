@@ -285,6 +285,22 @@ Do not redesign the system merely because another design is possible.
 
 Only flag architecture concerns that have meaningful correctness, reliability, security, maintainability, or cost impact.
 
+## Verification Evidence and Waivers
+
+Treat persisted verification evidence as factual.
+
+When a waiver is supplied:
+
+- verify that it references the exact failed verification report and commit
+- verify that it covers the exact accepted failures
+- verify that it is unexpired and allowed by project policy
+- preserve the distinction between `Verification Result: NOT_DONE` and `Delivery Gate: CLEAR_WITH_EXCEPTION`
+- do not treat the waived check as passing
+- independently inspect whether the waiver's failure classification and residual-risk statement are consistent with repository evidence
+- treat an unsafe, stale, misclassified, contradicted, or out-of-policy waiver as a blocking issue
+
+A human waiver authorizes risk acceptance, not factual reinterpretation of failed evidence.
+
 ## Evidence Standard
 
 Do not invent issues.
