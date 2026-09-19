@@ -41,9 +41,9 @@ Read only the minimum context required to repair the blocker.
 
 Use, in priority order:
 
-1. latest persisted review report under `docs/reviews/` when repairing review findings
-2. latest persisted verification report under `docs/verification/` when repairing verification failures
-3. latest diagnosis artifact under `docs/diagnostics/` when repairing diagnosed failures
+1. latest **applicable** persisted review report under `docs/reviews/` for the requested specification/change and branch when repairing review findings
+2. latest **applicable** persisted verification report under `docs/verification/` for the requested specification/change and branch when repairing verification failures
+3. latest **applicable** diagnosis artifact under `docs/diagnostics/` for the requested defect/change when repairing diagnosed failures
 4. requested specification when one governs the change
 5. established behavior/contract when repairing an existing defect without a dedicated spec
 6. relevant project-level `AGENTS.md`
@@ -57,7 +57,11 @@ Do not scan unrelated parts of the repository.
 
 Extract the concrete blocking findings from the persisted evidence artifact.
 
-Do not rely on chat memory when a persisted review, verification, or diagnosis artifact exists.
+Do not select evidence merely because it is the newest file globally. Match the requested specification/change, branch, and originating failure/review.
+
+If the implementation revision has advanced since that evidence was created, treat the artifact as historical input and first confirm that each blocker still exists in the current code before editing.
+
+Do not rely on chat memory when an applicable persisted review, verification, or diagnosis artifact exists.
 
 For each blocker determine:
 

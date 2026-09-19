@@ -19,7 +19,7 @@ It records a human decision to accept a documented residual risk temporarily.
 - Never edit the verification report to make it green.
 - Never delete, skip, quarantine, weaken, or suppress the failed check merely because a waiver exists.
 - The failed check should continue to execute in future verification runs.
-- A waiver is scoped to an exact verification report, commit, failure set, and expiry.
+- A waiver is scoped to an exact verification report, implementation-state fingerprint, failure set, and expiry.
 - A waiver never authorizes production deployment by itself.
 - Human production approval remains separate.
 - The agent must not invent the owner's justification or risk acceptance.
@@ -99,7 +99,8 @@ The waiver must identify:
 - verification report
 - specification/change
 - branch
-- exact commit SHA when available
+- verification base HEAD SHA
+- exact implementation-state fingerprint
 - exact failed checks
 - classification
 - approval timestamp/date when available
@@ -108,11 +109,14 @@ The waiver must identify:
 
 A waiver is stale and invalid when:
 
-- the source commit changed
-- the referenced verification report is not the one under review
+- the current branch differs from the referenced verification branch
+- the current effective non-evidence repository contents no longer reconstruct to the referenced implementation-state fingerprint
+- the referenced verification report is not the applicable report for the change under review
 - the failed check set changed materially
 - the waiver expired
 - project policy changed to prohibit it
+
+A commit created after verification does not invalidate the waiver by itself when the effective-content fingerprint remains identical.
 
 A new `/verify` run creates new evidence. Do not silently carry a waiver forward to a new verification report.
 
@@ -136,7 +140,8 @@ Required content:
 - verification report
 - specification/change
 - branch
-- commit SHA
+- verification base HEAD SHA
+- implementation-state fingerprint
 
 ### Failed Check(s)
 
@@ -172,7 +177,7 @@ Record a bounded expiry.
 
 ### Scope
 
-State that the waiver applies only to the referenced verification report/commit/failure set.
+State that the waiver applies only to the referenced verification report/implementation-state fingerprint/failure set.
 
 ### Verification Truth
 

@@ -191,7 +191,27 @@ Distinguish clearly between:
 - planned functionality
 - documentation-only design decisions
 
-## Stage 5 — Configure Project Rules
+## Stage 5 — Ensure Workflow Artifact Directories
+
+Ensure the repository contains the standard workflow artifact directories:
+
+- `docs/discovery/`
+- `docs/prd/`
+- `docs/architecture/`
+- `docs/adr/`
+- `docs/specs/`
+- `docs/diagnostics/`
+- `docs/verification/`
+- `docs/verification/waivers/`
+- `docs/reviews/`
+
+Create missing directories using a repository-appropriate placeholder such as `.gitkeep` when an empty directory must be represented in Git.
+
+Do not delete existing artifacts.
+
+These directories hold workflow evidence and design artifacts; they do not authorize implementation decisions.
+
+## Stage 6 — Configure Project Rules
 
 Review whether project-specific Kilo rules would materially help implementation.
 
@@ -205,7 +225,7 @@ Do not duplicate information already adequately covered by `AGENTS.md`.
 
 Prefer concise rules containing implementation constraints rather than tutorials.
 
-## Stage 6 — Build the Skill Coverage Matrix
+## Stage 7 — Build the Skill Coverage Matrix
 
 Perform a mandatory skill-coverage review for every major technology and engineering concern in the approved technology baseline.
 
@@ -272,7 +292,7 @@ Global workflow skills such as requirements grilling, TDD, diagnosis, and advers
 
 A project may legitimately have many `NOT_REQUIRED` rows when normal project instructions are sufficient.
 
-## Stage 7 — Search Existing Skills Before Creating New Ones
+## Stage 8 — Search Existing Skills Before Creating New Ones
 
 Prefer existing high-quality skills over generating a new generic skill from scratch.
 
@@ -304,7 +324,7 @@ Before recommending installation, evaluate:
 
 Do not silently install third-party skills.
 
-## Stage 8 — Skill Approval Gate
+## Stage 9 — Skill Approval Gate
 
 When useful third-party skills are found:
 
@@ -325,7 +345,7 @@ For each recommendation provide:
 
 A third-party skill recommendation is normally non-blocking.
 
-## Stage 9 — Install Approved Skills
+## Stage 10 — Install Approved Skills
 
 Install a third-party skill only after explicit user approval.
 
@@ -339,7 +359,7 @@ Keep the number of installed skills small and relevant.
 
 Do not install large skill collections when only one or two skills are required.
 
-## Stage 10 — Create Missing Project-Specific Skills
+## Stage 11 — Create Missing Project-Specific Skills
 
 If no suitable external skill exists for an important project-specific need, create a focused project skill.
 
@@ -347,7 +367,7 @@ Do not duplicate entire vendor documentation.
 
 Do not create a generic technology tutorial.
 
-## Stage 11 — Validate Repository Initialization
+## Stage 12 — Validate Repository Initialization
 
 Before declaring project initialization complete, verify:
 
@@ -357,6 +377,7 @@ Before declaring project initialization complete, verify:
 - `AGENTS.md` contains valid build/test commands where available
 - `AGENTS.md` contains executable approved security commands when architecture requires them
 - required security verification capabilities are not silently omitted
+- standard workflow artifact directories exist, including `docs/verification/waivers/` and `docs/reviews/`
 - `README.md` accurately describes the project
 - README does not claim unimplemented functionality
 - project rules are relevant and non-duplicative

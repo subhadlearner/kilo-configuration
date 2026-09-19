@@ -311,7 +311,7 @@ A specification is not complete until:
 - implementation is complete
 - required tests exist
 - factual verification evidence exists under `docs/verification/`
-- `/verify` returns `DONE`, or a separate valid human-authorized waiver establishes `CLEAR_WITH_EXCEPTION`
+- `/verify` returns `DONE` with `Delivery Gate: CLEAR`, or a separate valid human-authorized waiver establishes `CLEAR_WITH_EXCEPTION`
 - `/review` passes with any active waiver visible to reviewers
 - CI passes
 

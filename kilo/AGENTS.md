@@ -8,7 +8,7 @@ Produce production-grade software with minimum unnecessary complexity, strong en
 
 For normal feature work, use this lifecycle:
 
-`/grill (optional) → /prd → /architect → /project-init → /spec → /implement → /verify → /review`
+`/grill (optional) → /prd → /architect → /project-init → /spec → /implement → /verify → CLEAR or CLEAR_WITH_EXCEPTION → /review`
 
 Use `/grill` before `/prd` when the idea is ambiguous, unusually large, high-stakes, or contains many coupled product decisions. Skip it for clear, bounded work.
 
@@ -136,6 +136,8 @@ Never:
 
 Every non-trivial verification run must create a new history-preserving artifact under `docs/verification/`.
 
+A reusable review gate must be tied to an exact implementation-state fingerprint, not to a requirement that code already be committed. `/verify` records a base HEAD plus a deterministic manifest of all non-evidence tracked differences and untracked files, then rechecks the same fingerprint after verification. Normal uncommitted implementation work may therefore reach `CLEAR` when its fingerprint remains unchanged. If verification commands change non-evidence contents, the delivery gate remains `BLOCKED` until `/verify` is rerun against the new state.
+
 A specification is `DONE` only when all required applicable deterministic checks and acceptance criteria have verifiable evidence.
 
 A failed verification remains `NOT_DONE`. Never manually rewrite it to `DONE`.
@@ -144,11 +146,11 @@ When the human owner deliberately accepts a documented residual risk, use `/waiv
 
 A valid waiver may establish `Delivery Gate: CLEAR_WITH_EXCEPTION` for review, but it never changes the original verification result or makes the failed check pass.
 
-Waivers must be scoped, human-authorized, time-bounded, and tied to the exact verification evidence/commit/failure set. Waived checks continue to execute.
+Waivers must be scoped, human-authorized, time-bounded, and tied to the exact verification evidence/implementation-state fingerprint/failure set. Waived checks continue to execute.
 
 ## Review
 
-Review occurs only when the delivery gate is `CLEAR` or `CLEAR_WITH_EXCEPTION`.
+Review occurs only when the delivery gate is `CLEAR` or `CLEAR_WITH_EXCEPTION` **and** the current effective non-evidence repository contents reconstruct to the exact implementation-state fingerprint verified for the current specification/change and branch. A later commit of those same contents does not by itself invalidate verification.
 
 Every non-trivial `/review` run must create a new history-preserving artifact under `docs/reviews/`.
 
@@ -158,7 +160,7 @@ When senior review runs, the same review-run artifact records both the complete 
 
 Completed prior review reports must not be overwritten. Subsequent review runs create new numbered artifacts.
 
-`/fix` should consume the latest applicable persisted review report rather than relying on chat history.
+`/fix` should consume the latest applicable persisted review/verification/diagnosis evidence for the requested specification/change and branch rather than the newest artifact globally or chat history.
 
 For `CLEAR_WITH_EXCEPTION`, reviewers must receive the original failed verification evidence plus the active waiver and may still reject the change if the accepted risk is unsafe or out of policy.
 

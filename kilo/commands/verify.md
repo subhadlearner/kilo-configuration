@@ -23,6 +23,7 @@ Do not modify application code or tests merely to obtain a passing result.
 - Every non-trivial verification run creates a new immutable/history-preserving report under `docs/verification/`.
 - Never overwrite an earlier verification report.
 - Human risk acceptance is handled separately by `/waive`.
+- A reviewable verification result must be bound to an exact implementation-state fingerprint. The implementation may be uncommitted; verification success must authorize review only of the same effective repository contents that were actually checked.
 
 ## Stage 1 — Determine Verification Scope
 
@@ -37,6 +38,38 @@ Use, in priority order:
 5. the approved `security-verification` skill when security verification is applicable
 
 Determine all applicable required checks.
+
+Capture the repository state before executing checks.
+
+Record:
+
+- current branch
+- **verification base HEAD SHA** — the current HEAD before verification
+- an **implementation-state manifest** relative to that base HEAD
+
+The implementation-state manifest represents the effective non-evidence repository contents being verified, including both committed and uncommitted changes relative to the verification base HEAD.
+
+Build it from the union of:
+
+- tracked paths whose current contents differ from the verification base HEAD
+- untracked, non-ignored paths
+
+For every path in that union, excluding workflow evidence paths, record:
+
+- repository-relative path
+- current Git blob/content hash using read-only `git hash-object --no-filters`, or `DELETED` when the path does not exist
+
+Sort entries by repository-relative path before computing/storing the fingerprint.
+
+The **implementation-state fingerprint** is the deterministic identity of that normalized manifest. The full manifest must also be persisted so `/review` can reconstruct and compare it without relying on chat history.
+
+Workflow evidence paths are excluded from the implementation-state manifest:
+
+- `docs/verification/**`
+- `docs/reviews/**`
+- `docs/diagnostics/**`
+
+This design intentionally supports normal review-before-commit development. A dirty working tree is not itself a blocker when its effective contents are captured by the fingerprint.
 
 Project-level `AGENTS.md` is the primary source for repository verification commands.
 
@@ -197,7 +230,17 @@ If a required acceptance criterion has no deterministic evidence, mark it `FAIL`
 
 Do not infer that an acceptance criterion passes merely because unrelated tests are green.
 
-## Stage 9 — Determine Verification Result and Delivery Gate
+## Stage 9 — Recheck Implementation State and Determine Verification Result
+
+After all configured checks finish, reconstruct the implementation-state manifest again using the **same verification base HEAD SHA** and the same evidence-path exclusions.
+
+The verification evidence is content-stable only when:
+
+- the branch is unchanged
+- the normalized post-check manifest exactly matches the normalized pre-check manifest
+- therefore the implementation-state fingerprint is unchanged
+
+A verification command that modifies source, tests, specifications, configuration, dependency manifests/lockfiles, architecture/ADRs, project instructions, or any other non-evidence path changes the fingerprint and prevents a reusable clear gate until verification is rerun against that new state.
 
 Verification result is factual and uses only:
 
@@ -215,12 +258,27 @@ Return `NOT_DONE` when any required condition is not satisfied.
 
 For this verification run, derive:
 
-- `Delivery Gate: CLEAR` when verification is `DONE`
+- `Delivery Gate: CLEAR` when verification is `DONE` and the implementation-state fingerprint remained unchanged throughout verification
 - `Delivery Gate: BLOCKED` when verification is `NOT_DONE`
+- `Delivery Gate: BLOCKED` when checks are `DONE` but the fingerprint changed while verification was running
+
+When checks pass but the fingerprint changes during verification, preserve the factual result:
+
+`Verification Result: DONE`
+
+but record:
+
+`Delivery Gate: BLOCKED`
+
+with the blocker:
+
+`Implementation state changed while verification was running. Rerun /verify against the current state.`
+
+Do **not** require the implementation to be committed before `CLEAR`.
 
 Do not produce `CLEAR_WITH_EXCEPTION` inside `/verify`.
 
-That state can be established only by a separate valid, human-authorized `/waive` artifact for this exact verification report and commit.
+That state can be established only by a separate valid, human-authorized `/waive` artifact tied to this exact verification report and implementation-state fingerprint.
 
 ## Stage 10 — Persist Verification Evidence
 
@@ -244,7 +302,10 @@ The report must contain:
 - verification ID
 - specification/change
 - branch
-- commit SHA when available
+- verification base HEAD SHA
+- implementation-state fingerprint
+- normalized implementation-state manifest: path + Git blob/content hash or `DELETED`
+- whether the fingerprint remained unchanged throughout verification
 - date/time when available from the environment
 
 ### Verification Scope
@@ -312,9 +373,15 @@ or:
 
 ### Next Action
 
-When `DONE`:
+When `DONE` with `Delivery Gate: CLEAR`:
 
 `/review`
+
+When `DONE` with `Delivery Gate: BLOCKED` because implementation state changed during verification:
+
+rerun:
+
+`/verify`
 
 When `NOT_DONE`, select the truthful next path:
 
