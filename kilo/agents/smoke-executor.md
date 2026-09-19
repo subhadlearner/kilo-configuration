@@ -66,8 +66,11 @@ If neither a supported workflow nor supported action is supplied, return:
 For `ACTION: INJECT_FAILURE`:
 
 - read the active fixture from installed global `smoke/fixtures.json`
-- require the recipe to be explicitly listed in `allowed_failure_recipes`
+- read installed global `smoke/failure-recipes.json`
+- require the recipe to be explicitly listed in the fixture's `allowed_failure_recipes`
+- require exactly one matching canonical recipe definition
 - read the persisted smoke-run checkpoint/context
+- follow the canonical recipe's `injection`, `expected_route`, and `safety` fields
 - make the smallest deterministic disposable-project mutation that creates the documented condition
 - do not change upstream PRD/architecture/spec authority
 - do not weaken existing tests or security gates
