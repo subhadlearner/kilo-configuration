@@ -191,6 +191,460 @@ If the same framework symptom occurs twice with materially unchanged inputs:
 
 Do not consume budget by brute-force retries.
 
+## 3.4 Token and runtime-cost optimization strategy
+
+The smoke test exists to prove **workflow mechanics**, not to prove production readiness of the disposable smoke application.
+
+Minimize tokens by reducing unnecessary scope while preserving every workflow invariant being tested.
+
+### Principle A — use one micro-fixture for almost everything
+
+Use one tiny project/feature throughout the smoke test.
+
+Recommended shape:
+
+```text
+one small library/module
+one production function
+one public behavior
+one or two unit tests
+no network
+no database
+no cloud
+no authentication
+no queue
+no filesystem dependency unless needed for a specific test
+```
+
+Do not create separate applications for:
+
+- fix testing
+- diagnosis testing
+- waiver testing
+- freshness testing
+- review testing
+
+Mutate and restore the same disposable fixture between scenarios.
+
+This reduces:
+
+- repeated repository discovery
+- repeated architecture/spec context
+- repeated generated code
+- repeated test generation
+- repeated verification output
+- repeated reviewer context
+
+### Principle B — test the workflow at the lowest sufficient layer
+
+For the smoke application, prefer:
+
+```text
+unit test
+> component/integration test
+> E2E test
+```
+
+Use the lowest layer that proves the workflow behavior.
+
+Default smoke-test test surface:
+
+- 1 happy-path unit test
+- 1 failure/boundary unit test only when needed by the spec
+- 1 intentionally manipulated failure for recovery-loop testing
+
+Do **not** add merely for smoke testing:
+
+- broad integration suites
+- E2E browser/API suites
+- contract-test matrices
+- load tests
+- soak tests
+- fuzzing/property-based suites
+- large parameterized datasets
+- coverage-maximization tests
+- mutation testing
+- multiple test projects
+- containerized dependency stacks
+
+unless the scenario specifically exists to validate one of those workflow capabilities.
+
+The production workflow may require such tests for real projects. Their omission here is a property of the **smoke fixture**, not a weakening of production policy.
+
+### Principle C — make non-applicable capabilities truly non-applicable
+
+Choose a fixture for which the following are genuinely absent:
+
+- external APIs
+- databases
+- queues
+- cloud resources
+- IAM
+- containers
+- infrastructure-as-code
+- browser UI
+- distributed consistency
+- migrations
+
+Then the smoke specification and architecture can truthfully mark those concerns as not applicable.
+
+Do not configure expensive tooling simply so the smoke test can say it ran.
+
+For example, do not introduce:
+
+- LocalStack
+- Docker Compose
+- a test database
+- Playwright
+- Selenium
+- cloud emulators
+- vulnerability scanners requiring new infrastructure
+
+unless validating that exact capability is the purpose of the scenario.
+
+### Principle D — one acceptance criterion should prove one workflow behavior
+
+Keep the smoke spec intentionally narrow.
+
+A suitable core acceptance set is:
+
+```text
+AC-1: the deterministic function returns the expected result
+AC-2: invalid input follows one defined boundary behavior
+```
+
+Do not create many product requirements merely to make the PRD/spec appear realistic.
+
+The planning stages are being tested for:
+
+- authority
+- artifact persistence
+- routing
+- blocked-state handling
+- downstream handoff
+
+not for the ability to write a large product.
+
+### Principle E — keep planning artifacts minimal but complete
+
+For `/grill`, `/prd`, `/architect`, and `/spec`:
+
+- provide only the micro-fixture's actual requirements
+- answer only frontier questions
+- avoid speculative future roadmap
+- avoid optional capabilities
+- avoid multiple architecture alternatives once requirements clearly select a simple design
+- avoid long non-functional requirement catalogs unrelated to the fixture
+
+A smoke architecture can legitimately be:
+
+```text
+local deterministic library
+no persistence
+no network
+no deployment
+no cloud infrastructure
+unit-test-only verification
+```
+
+Operating-cost analysis should still be present and can correctly conclude:
+
+```text
+fixed production infrastructure cost: none for this fixture
+variable cloud cost: none
+external service cost: none
+operational burden: minimal/local only
+```
+
+This validates the architecture cost requirement without creating infrastructure to measure.
+
+### Principle F — never regenerate a valid artifact for a downstream test
+
+Once a stage has produced a valid reusable artifact, reuse it.
+
+Examples:
+
+- do not rerun `/prd` to test `/verify`
+- do not rerun `/architect` for each failure scenario
+- do not rerun `/spec` after a simple implementation defect
+- do not rerun `/implement` after a defect when `/fix` is the correct path
+- do not rerun `/verify` before deliberately testing that stale evidence blocks `/review`
+
+A runtime invocation is justified only when:
+
+1. the artifact is missing,
+2. the artifact is stale/invalidated,
+3. the scenario specifically tests that workflow stage,
+4. upstream authority changed.
+
+### Principle G — use repository checkpoints between scenarios
+
+Because the smoke repository is disposable, establish small human-controlled checkpoints after important valid states.
+
+Suggested checkpoints:
+
+```text
+CHECKPOINT-A: project-init ready
+CHECKPOINT-B: spec ready
+CHECKPOINT-C: implementation verified but uncommitted
+CHECKPOINT-D: implementation committed and verified/reviewed
+CHECKPOINT-E: clean post-repair state
+```
+
+Use branches/commits/worktrees appropriate to the disposable environment to restore these states.
+
+Do not ask an LLM to reconstruct a prior fixture when Git can restore it deterministically.
+
+Do not use destructive cleanup on a non-disposable repository.
+
+### Principle H — negative freshness tests should consume zero reviewer tokens
+
+For scenarios such as:
+
+- content mutation after verification
+- mode/type mutation
+- malformed evidence
+- stale waiver
+- wrong branch/scope
+- `UNRECONSTRUCTABLE`
+
+the freshness gate must stop `/review` **before** invoking:
+
+- DeepSeek pre-review
+- GPT-5.6 Sol senior review
+
+Therefore these scenarios should consume only orchestration/freshness-validation work, not reviewer-model tokens.
+
+If a reviewer runs after freshness has already failed, treat that as a framework defect.
+
+### Principle I — run successful senior review only as many times as necessary
+
+A complete smoke test does not need senior review for every scenario.
+
+Required senior-review executions should normally be limited to:
+
+1. one normal `DONE + CLEAR + MATCH` review-before-commit path
+2. optionally one `CLEAR_WITH_EXCEPTION` waiver path when validating that senior review receives and reasons over the waiver
+
+All other review scenarios should either:
+
+- reuse persisted review evidence, or
+- intentionally stop at freshness/pre-review gates.
+
+Do not rerun senior review merely to reconfirm the same clean code.
+
+### Principle J — use one cheap pre-review blocker
+
+To test:
+
+```text
+CHANGES_REQUIRED
+Senior Review: NOT_RUN
+```
+
+inject one obvious review defect that is not already caught by deterministic verification.
+
+Keep it small.
+
+Examples:
+
+- clearly misleading variable/API naming that violates an explicit project rule
+- unnecessary duplicate logic against an established repository convention
+- a deliberately documented maintainability issue that deterministic tests do not detect
+
+Do not create a large defective implementation just to exercise pre-review.
+
+The objective is to prove that senior review is skipped.
+
+### Principle K — reuse failures across adjacent scenarios only when semantics remain valid
+
+Reuse is encouraged, but do not distort routing.
+
+Allowed:
+
+- use one `NOT_DONE` deterministic defect for `/fix`
+- restore clean state, then create one ambiguous deterministic symptom for `/diagnose`
+- restore clean state, then create one trivial policy-allowed quality failure for `/waive`
+
+Do not use the obvious `/fix` defect for `/diagnose`, because that would falsely teach that every failure requires diagnosis.
+
+Do not use a real behavioral defect for a trivial waiver merely to save one verification invocation.
+
+Correct workflow semantics take precedence over token minimization.
+
+### Principle L — static-check configuration instead of invoking models
+
+Use static inspection for:
+
+- Claude route existence
+- Opus/Sonnet permissions
+- model aliases
+- task model-selection configuration
+- command existence
+- agent existence
+- skill existence
+- lifecycle text
+- `AUTHOR / CONTINUE / RECONCILE_ONLY` support
+- evidence-contract equality
+- security policy presence
+- cloud/operating-cost policy presence
+- smoke-test cost policy
+
+Do not invoke a model solely to prove that a configuration entry exists.
+
+### Principle M — avoid optional adversarial cycles
+
+Run one bounded DeepSeek adversarial scenario to prove the mechanism.
+
+If the challenged artifact does not materially change after reconciliation:
+
+- do not run a second adversarial pass.
+
+If it does materially change:
+
+- at most one targeted follow-up pass is sufficient for smoke validation.
+
+Do not test Sonnet and Opus runtime routes by default.
+
+### Principle N — minimize repository-reading context
+
+Each command should consume only the material context required by its authority stage.
+
+For the smoke fixture:
+
+- do not create unrelated files
+- do not add large sample data
+- do not add generated lockfile noise unless required
+- do not include unrelated historical docs
+- keep the test project deliberately small
+
+When invoking a stage, identify the target spec/change explicitly so the workflow does not need to discover unrelated artifacts.
+
+Token reduction must come from **irrelevant-context elimination**, not from omitting relevant constraints.
+
+### Principle O — keep persisted evidence concise
+
+Verification/review/diagnostic evidence must remain complete, but avoid:
+
+- full successful test logs
+- repeated source-code dumps
+- repeated PRD/architecture prose
+- duplicate command output
+- entire environment dumps
+
+Persist:
+
+- command
+- exit status
+- concise relevant evidence
+- failure excerpt when needed
+- artifact references
+
+Do not paste hundreds of passing log lines when the exit status and concise summary prove the check executed.
+
+### Principle P — do not optimize by weakening gates
+
+Token savings must never come from:
+
+- deleting required checks
+- marking applicable checks `NOT_APPLICABLE`
+- weakening assertions
+- lowering real project thresholds
+- suppressing security failures
+- avoiding a required fresh `/verify`
+- bypassing pre-review/senior review on the one path meant to exercise them
+- treating stale evidence as reusable
+
+The smoke fixture should be simpler; the workflow contract should not be weaker.
+
+## 3.5 Recommended minimal runtime invocation budget
+
+For a full end-to-end run from `/grill`, target approximately this number of substantive model invocations:
+
+| Stage/scenario | Target runtime invocations |
+| --- | ---: |
+| `/grill` | 1 |
+| `/prd` | 1 |
+| `/architect` | 1 |
+| project-init | 1 |
+| `/spec` | 1 |
+| `/implement` | 1 |
+| first successful `/verify` | 1 |
+| normal review: pre-review | 1 |
+| normal review: senior | 1 |
+| obvious failure `/verify` | 1 |
+| `/fix` | 1 |
+| post-fix `/verify` | 1 |
+| ambiguous failure `/verify` | 1 |
+| `/diagnose` | 1 |
+| `/fix` after diagnosis | 1 |
+| post-diagnosis `/verify` | 1 |
+| trivial waiver failure `/verify` | 1 |
+| `/waive` | 1 |
+| waiver review pre-review | 1 |
+| waiver senior review | 0–1 |
+| one adversarial challenge | 1 |
+| targeted reconciliation | 1 |
+| optional follow-up adversary | 0–1 |
+| freshness/malformed/stale negative tests | reviewer calls: **0** |
+| Claude runtime calls | **0** |
+
+This table is a target, not a mandate.
+
+If a valid artifact already exists because the smoke run resumes mid-workflow, subtract the corresponding completed stages.
+
+Do not create artificial invocations to reach the target count.
+
+## 3.6 Fast smoke versus full smoke
+
+Two execution depths are allowed.
+
+### FAST_SMOKE
+
+Use after a documentation/config-only framework change.
+
+Required:
+
+- static release gate
+- project-init contract propagation
+- first uncommitted verify
+- review-before-commit
+- identical commit remains fresh
+- content mutation stale check
+- one fix loop
+- one fail-closed evidence case
+- static model routing
+
+Normally omit:
+
+- diagnosis
+- waiver
+- adversarial runtime
+- mode/type test when environment setup is costly
+- second senior review
+
+### FULL_SMOKE
+
+Use before a milestone release or after changes to:
+
+- lifecycle routing
+- verification evidence
+- review gates
+- waiver semantics
+- fix/diagnosis routing
+- adversarial reconciliation
+- model orchestration
+
+Run all required acceptance criteria in this document.
+
+For `stable_v_0.1.0`, use:
+
+```text
+FULL_SMOKE
+```
+
+because Stable v0.1 establishes the baseline framework behavior.
+
 ---
 
 # 4. Core Rule: Determine Where to Start
