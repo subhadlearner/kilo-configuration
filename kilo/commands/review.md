@@ -18,6 +18,7 @@ Do not perform the code review yourself.
 - Persist reviewer findings faithfully; do not rewrite blocking findings into softer language.
 - The review artifact is the authoritative persisted handoff for `/fix`.
 - Verification evidence and waivers remain separate artifacts; reference them rather than duplicating or altering their truth.
+- Never review implementation state that is newer or materially different from the implementation revision captured by the verification report.
 
 ## Stage 1 — Determine Review Context
 
@@ -26,26 +27,52 @@ Identify:
 - the intended scope of the change
 - the relevant specification
 - relevant architecture and ADRs
-- the latest persisted verification report under `docs/verification/`
-- any waiver under `docs/verification/waivers/` that explicitly references that exact verification report and commit
+- the latest **applicable** persisted verification report under `docs/verification/` for this specification/change and branch
+- any waiver under `docs/verification/waivers/` that explicitly references that exact verification report and verified implementation commit
+- current branch
+- current HEAD commit SHA
+- current non-evidence working-tree changes
 
 Do not load unrelated project documentation.
 
 ### Verification Gate
 
-For implementation changes, review the latest persisted verification report before invoking any reviewer.
+For implementation changes, validate freshness of the applicable persisted verification report before invoking any reviewer.
 
-If no persisted verification report exists:
+A verification report is fresh for review only when all of these are true:
+
+- it belongs to the same specification/change being reviewed
+- it was produced for the current branch
+- its recorded verified implementation HEAD SHA equals the current HEAD SHA
+- it records repository state `STABLE`
+- the current working tree has no non-evidence changes
+
+The only uncommitted paths that may be ignored for this freshness check are workflow evidence paths:
+
+- `docs/verification/**`
+- `docs/reviews/**`
+- `docs/diagnostics/**`
+
+Do not treat a globally newest report for another specification, branch, or revision as applicable.
+
+If no applicable persisted verification report exists:
 
 - STOP the review pipeline
 - request `/verify` before continuing
+
+If the applicable verification report is stale because HEAD, branch, scope, or non-evidence working-tree state changed:
+
+- STOP the review pipeline
+- do not invoke `pre-reviewer`
+- report that verification evidence is stale
+- require the current implementation state to run `/verify` again
 
 If verification is `DONE` with `Delivery Gate: CLEAR`, proceed normally.
 
 If verification is `NOT_DONE`, proceed only when there is a valid active waiver that:
 
 - references the exact verification report
-- references the exact commit when available
+- references the exact verified implementation commit
 - covers every failure being accepted
 - is unexpired
 - is allowed by project policy
@@ -163,8 +190,10 @@ The report must contain:
 ### Verification Input
 
 - persisted verification report path/ID
+- verified implementation commit SHA
 - factual verification result
 - effective delivery gate
+- freshness check result
 - active waiver path/ID when applicable
 
 ### Pre-Review
