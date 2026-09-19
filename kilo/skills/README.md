@@ -37,6 +37,7 @@ Do not let a global skill silently replace an approved technology choice.
 | tdd | Addy/Matt-grounded local adaptation | Behavioral red → green vertical implementation |
 | diagnosing-bugs | Matt-grounded local adaptation | Tight feedback-loop-first root-cause diagnosis |
 | adversarial-check | Addy-grounded local adaptation | Fresh-context challenge of high-risk decisions |
+| security-verification | OWASP official-standard-grounded local skill | OWASP Top 10:2025 / ASVS-informed security verification, dependency/supply-chain, secrets, SAST, IaC, cloud/IAM, and evidence/waiver discipline |
 
 ## Skill governance
 

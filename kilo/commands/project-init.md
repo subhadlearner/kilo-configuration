@@ -119,7 +119,11 @@ Provide actual commands for:
 - lint
 - formatting verification
 - type checking/static analysis
-- security/dependency scanning when configured
+- dependency vulnerability scanning when configured
+- secret scanning when configured
+- SAST/static security analysis when configured
+- IaC security scanning when configured
+- container/image scanning when configured
 
 Commands must correspond to the approved stack.
 
@@ -141,7 +145,17 @@ Record project-specific testing requirements.
 
 ### Security Constraints
 
-Record relevant security requirements.
+Record relevant security requirements, including where applicable:
+
+- authentication/authorization invariants
+- secret handling
+- sensitive-data handling
+- applicable OWASP Top 10:2025 risks
+- approved security verification tools/commands
+- explicitly required security gates
+- project waiver policy and any non-waivable categories
+
+When security verification is materially relevant, include the global `security-verification` skill in the Skill Coverage Matrix as `ALREADY_AVAILABLE`.
 
 ### Cloud and Cost Constraints
 
@@ -341,6 +355,8 @@ Before declaring project initialization complete, verify:
 - no major technology was invented during initialization
 - `AGENTS.md` contains the actual project stack
 - `AGENTS.md` contains valid build/test commands where available
+- `AGENTS.md` contains executable approved security commands when architecture requires them
+- required security verification capabilities are not silently omitted
 - `README.md` accurately describes the project
 - README does not claim unimplemented functionality
 - project rules are relevant and non-duplicative

@@ -15,6 +15,8 @@ Use `/grill` before `/prd` when the idea is ambiguous, unusually large, high-sta
 Repair and incident loops:
 
 - `/verify → NOT_DONE → /fix → /verify`
+- `/verify → NOT_DONE → /diagnose → /fix → /verify` for uncertain/intermittent failures
+- `/verify → NOT_DONE → /waive → /review` only when the human owner explicitly accepts a bounded residual risk
 - `/review → CHANGES_REQUIRED or REQUEST CHANGES → /fix → /verify → /review`
 - `/diagnose (optional) → /fix → /verify` for difficult runtime, integration, concurrency, performance, or intermittent defects
 
@@ -41,8 +43,9 @@ Production deployment always requires human approval.
 - `/project-init` records and operationalizes that baseline in the repository.
 - `/spec` decomposes approved work.
 - `/implement` executes the approved specification.
-- `/verify` owns deterministic `DONE` / `NOT_DONE`.
-- `/review` owns AI review after verification.
+- `/verify` owns factual deterministic `DONE` / `NOT_DONE` and persists verification evidence.
+- `/waive` records explicit human risk acceptance without altering verification truth.
+- `/review` owns AI review after a `CLEAR` or valid `CLEAR_WITH_EXCEPTION` delivery gate.
 - `/diagnose` localizes difficult defects without redefining intended behavior.
 - `/fix` repairs diagnosed, verification, or review blockers without redesigning the system.
 - `/adversarial-check` challenges assumptions and failure modes but does not become the decision authority.
@@ -129,13 +132,35 @@ Never:
 - add warning/lint/static-analysis suppressions solely to silence a failure
 - disable a required quality/security check simply to obtain a pass
 
-`/verify` is the authoritative completion gate.
+`/verify` is the authoritative factual verification gate.
+
+Every non-trivial verification run must create a new history-preserving artifact under `docs/verification/`.
 
 A specification is `DONE` only when all required applicable deterministic checks and acceptance criteria have verifiable evidence.
 
+A failed verification remains `NOT_DONE`. Never manually rewrite it to `DONE`.
+
+When the human owner deliberately accepts a documented residual risk, use `/waive` to create a separate artifact under `docs/verification/waivers/`.
+
+A valid waiver may establish `Delivery Gate: CLEAR_WITH_EXCEPTION` for review, but it never changes the original verification result or makes the failed check pass.
+
+Waivers must be scoped, human-authorized, time-bounded, and tied to the exact verification evidence/commit/failure set. Waived checks continue to execute.
+
 ## Review
 
-Review occurs only after deterministic verification succeeds.
+Review occurs only when the delivery gate is `CLEAR` or `CLEAR_WITH_EXCEPTION`.
+
+Every non-trivial `/review` run must create a new history-preserving artifact under `docs/reviews/`.
+
+Pre-review findings must be persisted even when they block senior review. A blocked pre-review report records `CHANGES_REQUIRED` and `Senior Review: NOT_RUN`.
+
+When senior review runs, the same review-run artifact records both the complete pre-review evidence and the senior-review evidence.
+
+Completed prior review reports must not be overwritten. Subsequent review runs create new numbered artifacts.
+
+`/fix` should consume the latest applicable persisted review report rather than relying on chat history.
+
+For `CLEAR_WITH_EXCEPTION`, reviewers must receive the original failed verification evidence plus the active waiver and may still reject the change if the accepted risk is unsafe or out of policy.
 
 Review sequence:
 
@@ -148,6 +173,14 @@ Review sequence:
 Do not invoke the senior reviewer when pre-review has blocking findings.
 
 ## Security
+
+Use OWASP Top 10:2025 as the baseline application-security risk taxonomy and OWASP ASVS-style controls as a deeper web/API verification reference where appropriate.
+
+Security verification should cover applicable dependency/supply-chain, secret, SAST, IaC, container/image, authentication, authorization, data protection, injection, SSRF/XSS/CSRF, unsafe file/path handling, cryptography, logging/alerting, exceptional-condition handling, cloud/IAM, and project-specific security risks.
+
+Do not claim broad "OWASP compliant", "secure", or regulatory compliance from automated checks alone.
+
+If a required security risk is applicable but lacks approved executable evidence, report it as uncovered rather than passing it.
 
 Never:
 

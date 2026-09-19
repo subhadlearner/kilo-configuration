@@ -199,7 +199,7 @@ Explicitly select, where applicable:
 - contract-test approach
 - local cloud-service emulation strategy, if any
 
-### Code Quality Tooling
+### Code Quality and Security Tooling
 
 Explicitly select, where applicable:
 
@@ -208,8 +208,13 @@ Explicitly select, where applicable:
 - compiler/static analysis
 - type checking
 - code-quality analyzers
-- security/dependency scanning
+- dependency vulnerability scanning
 - secret scanning
+- SAST/static security analysis
+- IaC security scanning
+- container/image scanning
+- package provenance/supply-chain controls
+- framework-appropriate security testing
 
 ### Local Development
 
@@ -354,13 +359,21 @@ Cover, where relevant:
 - authentication
 - authorization
 - secrets
-- encryption
+- encryption and key management
 - network boundaries
 - least privilege
-- input validation
-- sensitive data/logging
+- input validation and output encoding
+- sensitive data/logging/privacy
 - supply-chain controls
-- abuse/throttling
+- abuse/throttling/resource exhaustion
+- security logging/alerting
+- error/exception handling and information disclosure
+- applicable OWASP Top 10:2025 risks
+- deeper OWASP ASVS-style technical controls for web/API systems where appropriate
+
+The architecture must explicitly decide which security verification capabilities are required for this project and which executable tools/checks will provide evidence.
+
+Do not claim "OWASP compliant" merely because a scanner is selected.
 
 ### Observability
 
@@ -506,7 +519,9 @@ Include:
 - linting
 - formatting
 - type/static analysis
-- security/dependency scanning
+- dependency/security scanning
+- secret scanning
+- SAST/IaC/container security checks when applicable
 - dependency restore command pattern
 - build command pattern
 - test command pattern
