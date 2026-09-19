@@ -26,6 +26,7 @@
       "git diff*": "allow",
       "git log*": "allow",
       "git ls-files*": "allow",
+      "git diff --raw*": "allow",
       "git hash-object --no-filters *": "allow",
       "git hash-object --stdin*": "allow",
       "dotnet build*": "allow",
