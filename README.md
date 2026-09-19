@@ -400,7 +400,36 @@ A smoke run persists restartable state in the disposable target project under:
 docs/verification/smoke/<run-id>.md
 ```
 
-This allows `/smoke RESUME <run-id>` to continue after user input, interruption, or a later chat session without depending on conversation memory.
+The Run ID is generated automatically by `/smoke` using:
+
+```text
+SMOKE-<PROFILE>-<fixture-id>-<NNN>
+```
+
+Examples:
+
+```text
+SMOKE-FAST-fast-micro-library-001
+SMOKE-FULL-full-minimal-api-001
+```
+
+The Run ID is printed near the top of every smoke response and the run record is created before substantive smoke execution begins.
+
+This allows:
+
+```text
+/smoke STATUS <run-id>
+```
+
+to show the current profile, fixture, release SHA, stage/scenario, progress, latest verification/review state, model ledger, observed cost, blocker/user action, and next step without executing the workflow.
+
+It also allows:
+
+```text
+/smoke RESUME <run-id>
+```
+
+to continue after user input, interruption, or a later chat session without depending on conversation memory.
 
 ### Smoke-test cost discipline
 
