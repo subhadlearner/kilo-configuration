@@ -212,7 +212,22 @@ If a required acceptance criterion has no deterministic evidence, mark it `FAIL`
 
 Do not infer that an acceptance criterion passes merely because unrelated tests are green.
 
-## Stage 9 — Determine Verification Result and Delivery Gate
+## Stage 9 — Recheck Repository State and Determine Verification Result
+
+Before determining the delivery gate, recheck:
+
+- current branch
+- current HEAD commit SHA
+- current uncommitted/untracked non-evidence changes
+
+The verified revision is `STABLE` only when:
+
+- current branch equals the branch captured before checks
+- current HEAD equals the HEAD captured before checks
+- there were no non-evidence working-tree changes before checks
+- there are no non-evidence working-tree changes after checks
+
+If a verification command itself changes source, tests, specifications, configuration, manifests/lockfiles, architecture/ADRs, project instructions, or any other non-evidence path, the result is not stable for review.
 
 Verification result is factual and uses only:
 
@@ -230,7 +245,7 @@ Return `NOT_DONE` when any required condition is not satisfied.
 
 For this verification run, derive:
 
-- `Delivery Gate: CLEAR` only when verification is `DONE` **and** the verified implementation revision is stable: the current HEAD SHA is recorded and there were no uncommitted/untracked non-evidence changes when verification began
+- `Delivery Gate: CLEAR` only when verification is `DONE` **and** the verified implementation revision is `STABLE` before and after the checks
 - `Delivery Gate: BLOCKED` when verification is `NOT_DONE`
 - `Delivery Gate: BLOCKED` when checks are `DONE` but the implementation revision is not stable enough to prove freshness for later review
 
@@ -273,8 +288,9 @@ The report must contain:
 - specification/change
 - branch
 - verified implementation HEAD commit SHA
-- repository state at verification start: `STABLE` or `UNSTABLE`
-- non-evidence changed paths, if any
+- repository state: `STABLE` or `UNSTABLE`
+- starting and ending branch/HEAD when they differ
+- non-evidence changed paths observed before or after checks, if any
 - date/time when available from the environment
 
 ### Verification Scope
