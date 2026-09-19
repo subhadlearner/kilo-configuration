@@ -99,7 +99,7 @@ The waiver must identify:
 - verification report
 - specification/change
 - branch
-- exact commit SHA when available
+- exact verified implementation commit SHA
 - exact failed checks
 - classification
 - approval timestamp/date when available
@@ -108,8 +108,10 @@ The waiver must identify:
 
 A waiver is stale and invalid when:
 
-- the source commit changed
-- the referenced verification report is not the one under review
+- the current branch differs from the referenced verification branch
+- the current HEAD differs from the verified implementation commit
+- non-evidence implementation/spec/configuration changes exist after verification
+- the referenced verification report is not the applicable report for the change under review
 - the failed check set changed materially
 - the waiver expired
 - project policy changed to prohibit it
@@ -136,7 +138,7 @@ Required content:
 - verification report
 - specification/change
 - branch
-- commit SHA
+- verified implementation commit SHA
 
 ### Failed Check(s)
 
