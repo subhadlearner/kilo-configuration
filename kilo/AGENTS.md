@@ -294,6 +294,21 @@ A user-directed request for Sonnet or Opus authorizes that specific invocation d
 
 Agent-proposed Sonnet or Opus calls always require explicit user approval.
 
+## Smoke-Test Cost Policy
+
+Smoke testing must default to models that do not consume the metered Anthropic API budget.
+
+For framework/configuration smoke tests:
+
+- use GPT-5.6 Sol/Luna through the connected ChatGPT subscription when appropriate
+- use DeepSeek Flash for implementation, verification, debugging, default adversarial checks, and other high-volume execution
+- do **not** use Claude Sonnet, Claude Haiku, or Claude Opus merely to prove routing or workflow behavior
+- retain Claude routing capability for real work, but invoke Claude during smoke testing only when the user explicitly requests a paid Claude test
+- prefer negative/static validation of Claude routing where possible
+- never spend paid frontier-model budget to validate behavior that can be proven with GPT/DeepSeek or static inspection
+
+The default smoke-test objective is to validate orchestration, permissions, state transitions, and model-selection mechanics at minimum practical API cost.
+
 ## Context Quality and Cost
 
 Do not reduce relevant context merely to save tokens.
