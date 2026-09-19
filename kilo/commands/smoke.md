@@ -91,9 +91,9 @@ Examples:
 
 ## Stage 4 — Prepare disposable project safely
 
-Use the selected registry fixture and its product brief.
+Use the selected registry fixture, its `source_repository`, and its product brief.
 
-The configured source repository is a template/baseline, not architecture authority.
+The fixture-specific source repository is a template/baseline, not architecture authority.
 
 For a new run:
 
@@ -126,8 +126,10 @@ The `/smoke` orchestrator generates the Run ID automatically. The user never sup
 Canonical format:
 
 ```text
-SMOKE-<PROFILE>-<fixture-id>-<NNN>
+SMOKE-<PROFILE>-<fixture-id>-<SEQ>
 ```
+
+`<SEQ>` is a decimal sequence padded to at least three digits (`001`, `002`, …, `999`, `1000`, …).
 
 Examples:
 
@@ -143,7 +145,7 @@ Generation algorithm:
 2. use the exact selected fixture ID from the installed global `smoke/fixtures.json`
 3. inspect `docs/verification/smoke/` for existing records matching:
    `SMOKE-<PROFILE>-<fixture-id>-*.md`
-4. parse only valid three-digit numeric suffixes
+4. parse only numeric suffixes containing at least three digits
 5. choose one greater than the highest existing suffix; use `001` when none exist
 6. before any substantive smoke stage or child-model invocation, create the run record immediately
 7. if the candidate filename already exists, increment and retry; never overwrite an existing run record
