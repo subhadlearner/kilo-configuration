@@ -112,35 +112,149 @@ If the tag is intentionally moved after documentation-only additions, record the
 
 ---
 
-# 2. Smoke-Test Repository
+# 2. Smoke-Test Repository and Fixture Selection
 
 Use a disposable branch, clone, or worktree based on the reusable project template.
 
-Recommended repository:
+Default source repository:
 
 `subhadlearner/production-ai-project`
 
-Recommended branch:
+Recommended branch pattern:
 
 ```text
-smoke/stable-v0.1
+smoke/<profile>-<fixture>-<run-id>
 ```
 
 Do not mutate protected `main`.
 
-The implementation fixture should be deliberately small.
+The implementation fixture should be deliberately small. The goal is to test the workflow, not application complexity.
 
-Recommended fixture properties:
+Approved fixture definitions are version-controlled in:
 
-- one deterministic behavior
-- one obvious unit-test seam
-- no cloud dependency
-- no database
-- no network access
-- no authentication
-- no paid external service
+```text
+kilo/smoke/fixtures.json
+```
 
-The goal is to test the workflow, not application complexity.
+Do not invent an additional fixture during an automated smoke run.
+
+## 2.1 Fixture registry
+
+### FAST — `fast-micro-library` (default)
+
+Purpose:
+
+- cheapest lifecycle/evidence validation
+- first-spec uncommitted verification
+- review-before-commit
+- freshness invalidation
+- direct fix loop
+- malformed evidence
+
+Default application-test budget:
+
+- 1–2 unit tests
+- no integration test
+- no E2E test
+- no persistence/network/cloud
+
+### FULL — `full-minimal-api` (default)
+
+Purpose:
+
+- complete lifecycle
+- recovery loops
+- diagnosis
+- waiver
+- review
+- adversarial reconciliation
+- arbitrary-stage restart
+
+Product shape:
+
+- one small HTTP behavior
+- one validation/error path
+- in-memory state only
+- no external DB/cloud/auth/queue/container requirement
+
+Default application-test budget:
+
+- 1–2 unit tests
+- at most 1 lightweight in-process integration test
+- no E2E suite
+
+### FULL — `full-sqlite-api` (optional)
+
+Use only when the framework change being validated materially touches persistence/database guidance, project-init persistence setup, or integration verification.
+
+Default application-test budget:
+
+- 1–2 unit tests
+- 1 focused local SQLite-backed integration test
+- no E2E suite
+
+This is intentionally not the FULL default because it costs more tokens and runtime.
+
+## 2.2 Executing the runbook
+
+The runbook is orchestrated through:
+
+```text
+/smoke FAST DEFAULT
+/smoke FULL DEFAULT
+```
+
+Explicit fixture selection:
+
+```text
+/smoke FAST fast-micro-library
+/smoke FULL full-minimal-api
+/smoke FULL full-sqlite-api
+```
+
+If the profile is supplied without a fixture, the orchestrator must show the compatible registry entries and request a choice.
+
+Resume an interrupted run:
+
+```text
+/smoke RESUME <run-id>
+```
+
+Inspect without executing:
+
+```text
+/smoke STATUS <run-id>
+```
+
+The smoke-run state is persisted in the disposable project under:
+
+```text
+docs/verification/smoke/<run-id>.md
+```
+
+The run record, not chat history, is the continuation authority.
+
+## 2.3 Fixture versus architecture authority
+
+The fixture defines:
+
+- product shape
+- profile compatibility
+- test-budget target
+- permitted failure-injection recipes
+
+The fixture does **not** choose:
+
+- programming language
+- runtime
+- framework
+- persistence technology when not intrinsic to the selected fixture
+- cloud provider
+- IaC tooling
+
+Those remain owned by `/architect`.
+
+A fixture test budget never permits skipping a genuinely applicable check required by the approved architecture/specification.
 
 ---
 
