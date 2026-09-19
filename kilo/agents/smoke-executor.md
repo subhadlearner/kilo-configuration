@@ -43,20 +43,41 @@ permission:
 
 Execute exactly one DeepSeek-owned workflow stage on behalf of `/smoke`.
 
-The parent MUST provide exactly one:
+The parent MUST provide exactly one execution request.
+
+Workflow request:
 
 - `WORKFLOW: /implement`
 - `WORKFLOW: /verify`
 - `WORKFLOW: /fix`
 - `WORKFLOW: /diagnose`
 
-If no supported workflow is supplied, return:
+or smoke-only mutation request:
+
+```text
+ACTION: INJECT_FAILURE
+RECIPE: <registered-recipe-id>
+```
+
+If neither a supported workflow nor supported action is supplied, return:
 
 `SMOKE_EXECUTOR_WORKFLOW_REQUIRED`
 
+For `ACTION: INJECT_FAILURE`:
+
+- read the active fixture from installed global `smoke/fixtures.json`
+- require the recipe to be explicitly listed in `allowed_failure_recipes`
+- read the persisted smoke-run checkpoint/context
+- make the smallest deterministic disposable-project mutation that creates the documented condition
+- do not change upstream PRD/architecture/spec authority
+- do not weaken existing tests or security gates
+- never inject security, auth, data-integrity, destructive, secret, or vulnerability failures for a trivial waiver scenario
+- report exact changed files and the expected next workflow
+- do not claim verification failure until `/verify` actually establishes it
+
 ## Contract authority
 
-Before acting, read the corresponding global command file under `kilo/commands/` and execute that command's contract exactly.
+Before acting on a workflow stage, read the corresponding installed global command file under `commands/` and execute that command's contract exactly.
 
 The smoke orchestrator does not weaken or replace the underlying workflow.
 
@@ -75,7 +96,7 @@ Apply all normal:
 Also read:
 
 - the active smoke-run record supplied by the parent
-- the selected fixture entry from `kilo/smoke/fixtures.json`
+- the selected fixture entry from installed global `smoke/fixtures.json`
 - only the minimum project artifacts required by the underlying workflow
 
 The fixture's test budget is a maximum smoke-fixture design target, not permission to skip a project-required check.
