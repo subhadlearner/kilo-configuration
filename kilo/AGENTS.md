@@ -274,7 +274,7 @@ Claude Sonnet is no longer a mandatory lifecycle model.
 Use Sonnet as an independent model-family second opinion when:
 
 - the user explicitly requests it, or
-- the Sol planner proposes a material cross-model review and the user approves the paid invocation.
+- the owning workflow model proposes a material cross-model review and the user approves the paid invocation.
 
 Typical uses include architecture/spec adversarial review, security/consistency review, or another material decision where model diversity adds value.
 
@@ -284,7 +284,7 @@ Reserve Opus for:
 
 - user-directed premium adversarial review
 - rare critical agent-proposed adversarial escalation with explicit approval
-- rare architecture-authority escalation when Sol cannot settle a high-impact decision
+- rare architecture-authority escalation when the owning architecture workflow cannot settle a high-impact decision
 
 Default adversary: DeepSeek Flash.
 Enhanced paid adversary: Claude Sonnet.
