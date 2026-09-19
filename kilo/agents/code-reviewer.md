@@ -291,7 +291,7 @@ Treat persisted verification evidence as factual.
 
 When a waiver is supplied:
 
-- verify that it references the exact failed verification report and implementation-state fingerprint
+- verify that it references the exact failed verification report whose canonical implementation-state manifest is authoritative, plus its implementation-state fingerprint
 - verify that it covers the exact accepted failures
 - verify that it is unexpired and allowed by project policy
 - preserve the distinction between `Verification Result: NOT_DONE` and `Delivery Gate: CLEAR_WITH_EXCEPTION`
