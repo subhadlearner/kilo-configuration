@@ -35,6 +35,7 @@ Read:
 - installed global `smoke/STABLE-V0.1-SMOKE-TEST-PLAN.md`
 - installed global `smoke/fixtures.json`
 - installed global `smoke/profiles.json`
+- installed global `smoke/failure-recipes.json`
 - global `AGENTS.md`
 - the minimum command/agent files needed for the next smoke stage
 
@@ -494,6 +495,8 @@ Before injection:
 - persist the clean checkpoint/state
 - state the expected workflow route
 - require the recipe ID to be listed in the selected fixture
+- load that exact recipe definition from installed global `smoke/failure-recipes.json`
+- require a unique matching recipe definition
 - change only what is necessary for that scenario
 
 Never use a security, auth, data-integrity, destructive, or vulnerability failure as the trivial waiver recipe.
