@@ -203,6 +203,7 @@ Ensure the repository contains the standard workflow artifact directories:
 - `docs/diagnostics/`
 - `docs/verification/`
 - `docs/verification/waivers/`
+- `docs/verification/smoke/`
 - `docs/reviews/`
 - `docs/workflow/`
 
@@ -390,7 +391,7 @@ Before declaring project initialization complete, verify:
 - `AGENTS.md` contains valid build/test commands where available
 - `AGENTS.md` contains executable approved security commands when architecture requires them
 - required security verification capabilities are not silently omitted
-- standard workflow artifact directories exist, including `docs/verification/waivers/`, `docs/reviews/`, and `docs/workflow/`
+- standard workflow artifact directories exist, including `docs/verification/waivers/`, `docs/verification/smoke/`, `docs/reviews/`, and `docs/workflow/`
 - `docs/workflow/IMPLEMENTATION-STATE-EVIDENCE-V1.md` exists and is synchronized verbatim with the global canonical contract
 - `README.md` accurately describes the project
 - README does not claim unimplemented functionality
