@@ -468,6 +468,7 @@ List:
 
 - `AGENTS.md`
 - `README.md`
+- `docs/workflow/IMPLEMENTATION-STATE-EVIDENCE-V1.md`
 - relevant `.kilo/rules/*`
 - relevant `.kilo/skills/*`
 
