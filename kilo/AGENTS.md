@@ -22,6 +22,8 @@ Repair and incident loops:
 
 `/adversarial-check` is an auxiliary risk-control command for high-risk artifacts; it does not replace `/verify` or `/review`.
 
+`/smoke` is a release-validation utility for executing or resuming `FAST` or `FULL` smoke profiles against approved disposable fixtures. It does not become a product lifecycle authority and must preserve the normal command ownership, evidence, model-routing, and blocked-state contracts.
+
 Production deployment always requires human approval.
 
 ## Core Principles
@@ -136,7 +138,7 @@ Never:
 
 Every non-trivial verification run must create a new history-preserving artifact under `docs/verification/`.
 
-Reusable verification/review evidence must follow `kilo/contracts/implementation-state-evidence-v1.md`. The canonical implementation-state manifest is the authoritative repository-state identity and includes path, effective Git mode/type, and content/blob identity; the fingerprint is only its compact checksum/identifier. Normal uncommitted implementation work may reach `CLEAR` only when pre/post verification canonical manifests are an exact `MATCH`. `MISMATCH` or `UNRECONSTRUCTABLE` fails closed and requires a fresh `/verify`.
+Reusable verification/review evidence must follow installed global `contracts/implementation-state-evidence-v1.md`. The canonical implementation-state manifest is the authoritative repository-state identity and includes path, effective Git mode/type, and content/blob identity; the fingerprint is only its compact checksum/identifier. Normal uncommitted implementation work may reach `CLEAR` only when pre/post verification canonical manifests are an exact `MATCH`. `MISMATCH` or `UNRECONSTRUCTABLE` fails closed and requires a fresh `/verify`.
 
 A specification is `DONE` only when all required applicable deterministic checks and acceptance criteria have verifiable evidence.
 
@@ -328,6 +330,16 @@ Premium adversary: Claude Opus.
 A user-directed request for Sonnet or Opus authorizes that specific invocation directly. Do not require a prior DeepSeek pass or Sol justification, and do not add another adversarial model unless the user asks.
 
 Agent-proposed Sonnet or Opus calls always require explicit user approval.
+
+## Smoke-Test Orchestration
+
+Use `/smoke FAST [fixture]`, `/smoke FULL [fixture]`, `/smoke RESUME <run-id>`, or `/smoke STATUS <run-id>` for controlled framework validation.
+
+Approved fixture metadata is stored in installed global `smoke/fixtures.json`. Fixture selection constrains the disposable test shape; it never overrides `/architect` technology authority or permits skipping genuinely applicable project checks.
+
+`/smoke` must persist restartable run state in the disposable project's `docs/verification/smoke/` area so a run can resume without relying on chat history.
+
+The orchestrator must reuse valid artifacts, resume from the earliest incomplete or invalidated stage, and preserve each underlying command's normal model routing. Negative freshness checks must stop before reviewer invocation.
 
 ## Smoke-Test Cost Policy
 

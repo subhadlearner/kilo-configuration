@@ -53,7 +53,8 @@
       "pre-reviewer": "allow",
       "adversary-sonnet": "ask",
       "planning-worker": "allow",
-      "adversary-flex": "allow"
+      "adversary-flex": "allow",
+      "smoke-executor": "allow"
     },
     "skill": "ask",
     "websearch": "ask",
