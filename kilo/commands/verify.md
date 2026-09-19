@@ -57,7 +57,7 @@ Build it from the union of:
 For every path in that union, excluding workflow evidence paths, record:
 
 - repository-relative path
-- current Git blob/content hash using read-only `git hash-object`, or `DELETED` when the path does not exist
+- current Git blob/content hash using read-only `git hash-object --no-filters`, or `DELETED` when the path does not exist
 
 Sort entries by repository-relative path before computing/storing the fingerprint.
 
