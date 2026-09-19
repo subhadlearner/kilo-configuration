@@ -1376,6 +1376,96 @@ after repository correction.
 
 When an upstream stage changes, rerun required downstream stages.
 
+## 20.1 Concrete failure recipe — deterministic implementation defect
+
+Use this recipe when you want to prove the shortest repair loop:
+
+```text
+/verify
+→ NOT_DONE
+→ /fix
+→ /verify
+→ DONE + CLEAR
+```
+
+### Safe fixture
+
+Choose a trivial deterministic function already covered by one smoke-test unit test.
+
+Example intended behavior:
+
+```text
+Add(2, 3) = 5
+```
+
+Temporarily introduce an obvious defect such as:
+
+```text
+return a - b;
+```
+
+instead of:
+
+```text
+return a + b;
+```
+
+Do not modify the test.
+
+### Expected /verify result
+
+Run:
+
+```text
+/verify
+```
+
+Expected:
+
+```text
+Verification Result: NOT_DONE
+Delivery Gate: BLOCKED
+```
+
+The verification report should identify the failing test and acceptance criterion.
+
+### Expected /fix behavior
+
+Run:
+
+```text
+/fix
+```
+
+Expected behavior:
+
+- consume the applicable persisted verification report
+- confirm the defect still exists
+- make the smallest code correction
+- do not alter the test merely to obtain green status
+- do not redesign architecture
+- do not claim `DONE`
+
+Then rerun:
+
+```text
+/verify
+```
+
+Expected:
+
+```text
+Verification Result: DONE
+Delivery Gate: CLEAR
+Freshness: MATCH
+```
+
+### Pass condition
+
+The original failed verification artifact remains unchanged and a new successful verification artifact is created.
+
+---
+
 ---
 
 # 21. Phase 14 — /diagnose loop
@@ -1409,6 +1499,119 @@ DIAGNOSIS_BLOCKED
 If blocked because evidence/environment access is missing, obtain only the minimum missing input and rerun `/diagnose`.
 
 Do not invent a complex flaky system solely for smoke testing. This phase may be marked optional if no cheap deterministic diagnostic fixture exists.
+
+## 21.1 Concrete failure recipe — force diagnosis before fixing
+
+The purpose of this recipe is to ensure the workflow distinguishes:
+
+- a known straightforward defect that belongs directly to `/fix`
+- an observed failure whose root cause is not yet established and therefore belongs to `/diagnose`
+
+### Recommended low-cost fixture
+
+Create two small functions where the externally observed failure does not reveal which internal assumption is wrong.
+
+Example:
+
+```text
+NormalizeAmount("10.50") → 10.50
+FormatAmount(10.50)      → "10.50"
+```
+
+Introduce a defect in one underlying transformation while the failing test observes only the end-to-end result.
+
+For example, make normalization incorrectly use integer parsing or culture-sensitive parsing, then keep the high-level test expectation unchanged.
+
+The failure should be real and deterministic, but the verification output should not itself establish whether the defect is in parsing, normalization, or formatting.
+
+### Step 1 — verify
+
+Run:
+
+```text
+/verify
+```
+
+Expected:
+
+```text
+Verification Result: NOT_DONE
+Delivery Gate: BLOCKED
+```
+
+The report should contain the observed failure, not an invented root-cause claim.
+
+### Step 2 — diagnose
+
+Run:
+
+```text
+/diagnose
+```
+
+Expected behavior:
+
+- read the persisted verification evidence
+- reproduce the exact symptom
+- narrow the failure to a specific component/assumption
+- use the existing spec/tests/contracts to establish intended behavior
+- persist diagnostic evidence under `docs/diagnostics/`
+- avoid changing production code while root cause is still uncertain
+
+Expected status:
+
+```text
+DIAGNOSIS_READY
+```
+
+A good diagnosis should say what failed, why it failed, and what evidence proves that conclusion.
+
+### Step 3 — fix
+
+Run:
+
+```text
+/fix
+```
+
+Expected behavior:
+
+- consume the diagnosis plus applicable verification evidence
+- apply the smallest correction
+- preserve approved behavior and test strength
+
+### Step 4 — verify again
+
+Run:
+
+```text
+/verify
+```
+
+Expected:
+
+```text
+Verification Result: DONE
+Delivery Gate: CLEAR
+Freshness: MATCH
+```
+
+### Negative routing check
+
+If the failure is already obvious from verification evidence—for example a unit test clearly shows `Add` subtracts instead of adds—do **not** force `/diagnose`.
+
+Use:
+
+```text
+/verify
+→ NOT_DONE
+→ /fix
+→ /verify
+```
+
+The smoke test should prove that diagnosis is used because uncertainty exists, not merely because the command exists.
+
+---
 
 ---
 
@@ -1482,6 +1685,180 @@ MISMATCH
 ```
 
 Waiver must not authorize the changed implementation.
+
+## 22.1 Concrete failure recipe — trivial waivable quality issue
+
+The waiver smoke test must use a failure that is:
+
+- real
+- intentionally introduced
+- low impact
+- explicitly allowed by project policy
+- temporary
+- easy to remediate
+- not security-critical
+- not data-integrity-critical
+- not destructive
+- not an authentication/authorization failure
+
+### Preferred fixture
+
+Use a deliberately configured non-security quality gate that is required by the smoke specification but safe to accept temporarily.
+
+Example:
+
+- require documentation coverage for one public smoke-test method
+- intentionally omit that documentation
+- verification command returns failure because the required documentation check fails
+- application behavior and tests remain correct
+
+Another acceptable fixture is a harmless formatting/lint rule designated by the smoke project as temporarily waivable.
+
+Do **not** use:
+
+- failing unit/integration behavior that means the acceptance criterion is actually wrong
+- secret-scanning failures
+- authentication or authorization failures
+- dependency vulnerabilities
+- IaC security failures
+- data-loss/integrity failures
+- destructive migration failures
+- required safety/reliability invariants
+
+Those should not be normalized as routine waiver examples.
+
+### Step 1 — establish NOT_DONE
+
+Run:
+
+```text
+/verify
+```
+
+Expected:
+
+```text
+Verification Result: NOT_DONE
+Delivery Gate: BLOCKED
+```
+
+The failed report must identify the exact trivial quality check.
+
+### Step 2 — request human waiver
+
+Run:
+
+```text
+/waive
+```
+
+Provide explicit smoke-test authorization, for example:
+
+```text
+Accept this documentation-only smoke-test failure temporarily.
+
+Justification:
+This is an intentionally introduced non-runtime documentation gap used only to validate the waiver workflow.
+
+Residual risk:
+One smoke-test public API lacks the required documentation.
+
+Compensating control:
+Behavioral tests and all runtime/security checks remain passing.
+
+Remediation:
+Add the missing documentation immediately after the waiver/review scenario.
+
+Expiry:
+End of this smoke-test session.
+```
+
+Expected:
+
+```text
+WAIVER_APPROVED
+```
+
+and:
+
+```text
+Verification Result: NOT_DONE
+Delivery Gate: CLEAR_WITH_EXCEPTION
+```
+
+The verification report itself must remain `NOT_DONE`.
+
+### Step 3 — review with exception
+
+Run:
+
+```text
+/review
+```
+
+Expected behavior:
+
+- review first validates Contract-v1 freshness
+- review receives the failed verification evidence
+- review receives the active waiver verbatim
+- reviewers may still reject the change if the waiver is unsafe or misclassified
+- if otherwise acceptable, the review may proceed under `CLEAR_WITH_EXCEPTION`
+
+### Step 4 — prove waiver staleness
+
+Before remediation, change one identity-bearing source/test/configuration file.
+
+Run:
+
+```text
+/review
+```
+
+Expected:
+
+```text
+MISMATCH
+```
+
+The old waiver must not authorize the new implementation state.
+
+### Step 5 — remediate instead of carrying the waiver forever
+
+Restore the verified implementation state as needed, then actually fix the trivial quality issue.
+
+Run:
+
+```text
+/verify
+```
+
+Expected:
+
+```text
+Verification Result: DONE
+Delivery Gate: CLEAR
+```
+
+The historical waiver and historical `NOT_DONE` report remain preserved as evidence.
+
+---
+
+## 22.2 Full recovery-flow matrix
+
+Use these deliberately injected scenarios to validate the intended routing:
+
+| Injected condition | First result | Correct next path |
+| --- | --- | --- |
+| Obvious deterministic code defect | `NOT_DONE` | `/fix → /verify` |
+| Failure observed but root cause genuinely unclear | `NOT_DONE` | `/diagnose → /fix → /verify` |
+| Trivial policy-allowed temporary quality failure | `NOT_DONE` | `/waive → CLEAR_WITH_EXCEPTION → /review` |
+| Non-waivable security/integrity failure | `NOT_DONE` | repair via `/fix` or upstream authority; waiver must be blocked |
+| Review finds blocking implementation issue | `CHANGES_REQUIRED` or `REQUEST CHANGES` | `/fix → /verify → /review` |
+| Evidence becomes stale after any repair/change | stale/`MISMATCH` | fresh `/verify` before review |
+
+The smoke test passes only if the workflow chooses the path that matches the nature of the failure rather than mechanically invoking every recovery command.
+
+---
 
 ---
 
