@@ -1,147 +1,27 @@
-# Stable v0.1 Smoke-Test Plan
+# Stable v0.1 Workflow Smoke-Test Runbook
 
 ## Purpose
 
-This document defines the controlled validation plan for the Kilo workflow release tagged:
-
-`stable_v_0.1.0`
-
-The goal is to validate the **released workflow contract and state transitions** without repeating expensive model-routing and planning exercises that have already been exercised during framework development.
-
-This plan is intentionally cost-controlled.
-
-It validates the parts of the framework that materially affect correctness after the Stable v0.1 hardening work:
-
-- first-spec verification before any implementation commit
-- review-before-commit
-- canonical implementation-state evidence
-- freshness after committing identical verified contents
-- stale-evidence rejection after implementation changes
-- Git mode/type identity
-- verification mutation detection
-- normal repair loop
-- human-authorized waiver flow
-- review gating
-- persisted evidence
-- narrow adversarial reconciliation
-- project-init propagation of the Stable-v0.1 evidence contract
-
-It does **not** require Claude for the default smoke test.
-
----
-
-## Release Under Test
-
-Test the exact release/tag:
+This document is the executable smoke-test and recovery runbook for the Kilo workflow release:
 
 ```text
 stable_v_0.1.0
 ```
 
-Before execution, confirm that the tag points to the final intended Stable v0.1 commit.
+It is designed to be usable in **two different ways**:
 
-Record in the smoke-test report:
+1. as a full end-to-end validation beginning at `/grill`, or
+2. as a restartable runbook when the repository is already somewhere in the workflow and repeating earlier stages would be unnecessary or incorrect.
 
-- `kilo-configuration` tag and commit SHA
-- `production-ai-project` tag/commit SHA or exact baseline commit used as the disposable test project
-- Kilo Code version
-- Git version
-- OS
-- runtime/tool versions materially relevant to the chosen fixture
+Do **not** assume prior chat history.
 
-Do not run the smoke test against an unrecorded moving branch.
+Do **not** assume that all earlier stages have already run.
 
----
+Do **not** blindly restart from `/grill`.
 
-## Cost Policy
+At every stage, first inspect the persisted repository artifacts and current workflow state, then begin from the earliest stage that is actually incomplete, stale, blocked, or invalidated.
 
-### Default model usage
-
-Use the normal Stable-v0.1 routing:
-
-| Activity | Model |
-| --- | --- |
-| Implementation | DeepSeek Flash |
-| Verification | DeepSeek Flash |
-| Fix | DeepSeek Flash |
-| Diagnosis, if genuinely needed | DeepSeek Flash |
-| Default adversarial review | DeepSeek Flash |
-| Pre-review | DeepSeek Flash |
-| Senior review | GPT-5.6 Sol |
-| Lightweight project-init/orchestration | GPT-5.6 Luna |
-
-### Claude policy
-
-Do **not** invoke Claude Sonnet, Haiku, or Opus during this smoke test unless the human owner explicitly requests one isolated paid routing test.
-
-Claude routing should otherwise be validated statically from configuration and agent definitions.
-
-### Planning-model policy
-
-Do not rerun broad PRD/architecture exercises merely to prove that GPT-5.6 Sol can be called.
-
-Use static inspection for already-established routing and lifecycle rules.
-
-If a minimal specification is needed for the disposable smoke fixture, keep it deliberately small and bounded.
-
-### Stop-loss rule
-
-If the same workflow defect causes two materially identical failed attempts:
-
-1. stop repeating the expensive model call,
-2. preserve the evidence,
-3. diagnose the framework defect,
-4. fix the framework in a later version rather than burning additional smoke-test budget.
-
----
-
-## Test Environment
-
-Use a disposable branch or disposable clone/worktree of the project-side template.
-
-Recommended target:
-
-`subhadlearner/production-ai-project`
-
-Do not perform the smoke test directly on its protected `main` branch.
-
-Recommended branch:
-
-```text
-smoke/stable-v0.1
-```
-
-The smoke-test implementation must be intentionally trivial so failures are attributable to workflow mechanics rather than application complexity.
-
-A suitable fixture is a tiny deterministic utility with:
-
-- one observable behavior
-- one unit-test seam
-- no external cloud dependency
-- no database
-- no network call
-- no authentication
-- no paid service
-
-Examples include:
-
-- a small string/number transformation
-- a deterministic validation function
-- a tiny command or API-free library function
-
-The fixture is not the subject of the test. The workflow is.
-
----
-
-# Phase 0 — Static Release Gate
-
-**Model cost: zero or negligible**
-
-Before running any mutating workflow, inspect the released configuration.
-
-## 0.1 Lifecycle
-
-Confirm the released global policy retains:
+The primary lifecycle is:
 
 ```text
 /grill (optional)
@@ -153,93 +33,669 @@ Confirm the released global policy retains:
 → /verify
 → CLEAR or CLEAR_WITH_EXCEPTION
 → /review
+→ CI / PR / merge
 ```
 
-Confirm repair paths remain present:
+Supporting loops are:
 
 ```text
 /verify → NOT_DONE → /fix → /verify
-/verify → NOT_DONE → /diagnose → /fix → /verify
-/verify → NOT_DONE → /waive → CLEAR_WITH_EXCEPTION → /review
-/review → CHANGES_REQUIRED or REQUEST CHANGES → /fix → /verify → /review
+
+/verify → NOT_DONE
+        → /diagnose
+        → /fix
+        → /verify
+
+/verify → NOT_DONE
+        → /waive
+        → CLEAR_WITH_EXCEPTION
+        → /review
+
+/review → CHANGES_REQUIRED or REQUEST CHANGES
+        → /fix
+        → /verify
+        → /review
+
+/architect or /spec
+        → adversarial findings
+        → RECONCILE_ONLY
+        → targeted recheck if materially changed
 ```
 
-## 0.2 Planning modes
+The runbook validates:
 
-Confirm `planning-worker` supports exactly the intended modes:
+- discovery and requirement grilling
+- PRD readiness and restart behavior
+- architecture ownership and operating-cost considerations
+- project initialization
+- specification decomposition
+- first-spec implementation before any implementation commit
+- deterministic verification
+- review-before-commit
+- evidence freshness
+- commit-after-verification behavior
+- content and Git mode/type identity
+- verification mutation detection
+- persisted review evidence
+- repair and diagnosis loops
+- bounded human waivers
+- adversarial reconciliation
+- stale downstream-artifact handling
+- recovery when a run starts from the middle of the workflow
+- low-cost model routing
+- zero-Claude-by-default smoke testing
+
+---
+
+# 1. Release Under Test
+
+Validate the exact release/tag:
+
+```text
+stable_v_0.1.0
+```
+
+Before running any model workflow, record:
+
+- `kilo-configuration` tag
+- exact `kilo-configuration` commit SHA
+- exact test-project baseline SHA
+- Kilo Code version
+- Git version
+- OS
+- shell/runtime information
+- materially relevant SDK/tool versions
+
+Do not test an unrecorded moving branch.
+
+If the tag is intentionally moved after documentation-only additions, record the final SHA before testing.
+
+---
+
+# 2. Smoke-Test Repository
+
+Use a disposable branch, clone, or worktree based on the reusable project template.
+
+Recommended repository:
+
+`subhadlearner/production-ai-project`
+
+Recommended branch:
+
+```text
+smoke/stable-v0.1
+```
+
+Do not mutate protected `main`.
+
+The implementation fixture should be deliberately small.
+
+Recommended fixture properties:
+
+- one deterministic behavior
+- one obvious unit-test seam
+- no cloud dependency
+- no database
+- no network access
+- no authentication
+- no paid external service
+
+The goal is to test the workflow, not application complexity.
+
+---
+
+# 3. Cost Policy
+
+## 3.1 Default routing
+
+Use Stable-v0.1 defaults:
+
+| Work | Default |
+| --- | --- |
+| Discovery / PRD / architecture / spec | GPT-5.6 Sol |
+| Project initialization | GPT-5.6 Luna |
+| Implementation | DeepSeek Flash |
+| Verification | DeepSeek Flash |
+| Fix | DeepSeek Flash |
+| Diagnosis | DeepSeek Flash |
+| Default adversarial review | DeepSeek Flash |
+| Pre-review | DeepSeek Flash |
+| Senior review | GPT-5.6 Sol |
+
+## 3.2 Claude policy
+
+Do not invoke Claude Sonnet, Haiku, or Opus merely to smoke-test routing.
+
+Validate their routing statically.
+
+A paid Claude invocation is allowed only when explicitly approved as a separate isolated test.
+
+Expected default:
+
+```text
+Claude invocation count: 0
+Claude spend: 0
+```
+
+## 3.3 Repetition stop-loss
+
+Never repeatedly rerun an expensive model merely because a workflow did not behave as expected.
+
+If the same framework symptom occurs twice with materially unchanged inputs:
+
+1. stop,
+2. preserve the evidence,
+3. classify the defect,
+4. diagnose the workflow,
+5. fix it in a later framework version.
+
+Do not consume budget by brute-force retries.
+
+---
+
+# 4. Core Rule: Determine Where to Start
+
+Before running any workflow command, determine the current repository state.
+
+Inspect, where present:
+
+```text
+docs/discovery/
+docs/prd/
+docs/architecture/
+docs/adr/
+docs/specs/
+docs/diagnostics/
+docs/verification/
+docs/verification/waivers/
+docs/reviews/
+docs/workflow/
+AGENTS.md
+README.md
+.kilo/rules/
+.kilo/skills/
+```
+
+Also inspect:
+
+- current branch
+- current HEAD
+- current working-tree changes
+- latest applicable persisted evidence
+- whether upstream artifacts have changed since downstream artifacts were generated
+- whether any current artifact is explicitly blocked
+
+Do not use the newest artifact globally merely because it is newest.
+
+Use the latest **applicable** artifact for the current:
+
+- product/change
+- specification
+- branch
+- repository state
+
+---
+
+# 5. Start/Resume Decision Table
+
+Use this table before spending model budget.
+
+| Current situation | Start/resume at |
+| --- | --- |
+| Idea is vague, coupled, high-risk, or unresolved | `/grill` |
+| Product intent is already clear but no approved PRD exists | `/prd` |
+| Approved PRD exists, architecture missing | `/architect` |
+| Architecture is blocked by product ambiguity | `/prd` |
+| Architecture is ready, repo not initialized | `/project-init` |
+| Project-init reports architecture conflict | `/architect` |
+| Architecture + project-init are ready, no implementation spec | `/spec` |
+| Spec is blocked by requirement ambiguity | `/prd` |
+| Spec is blocked by architecture ambiguity | `/architect` |
+| Spec is blocked by incomplete project initialization | `/project-init` |
+| Approved spec exists and implementation has not started | `/implement` |
+| Implementation is blocked by spec ambiguity | `/spec` |
+| Implementation is blocked by architecture change | `/architect` |
+| Implementation is blocked only by repository/environment state | fix environment, then rerun `/implement` |
+| Implementation exists but has never been deterministically checked | `/verify` |
+| Verification is `DONE + CLEAR` | `/review` |
+| Verification is `NOT_DONE` and defect is understood | `/fix` |
+| Verification is `NOT_DONE` and root cause is uncertain/intermittent | `/diagnose` |
+| Verification is `NOT_DONE`, risk is explicitly accepted and waivable | `/waive` |
+| Verification evidence is stale or `MISMATCH` | `/verify` |
+| Verification evidence is `UNRECONSTRUCTABLE` | `/verify` |
+| Pre-review returns `CHANGES_REQUIRED` | `/fix → /verify → /review` |
+| Senior review returns `REQUEST CHANGES` | `/fix → /verify → /review` |
+| Review is `APPROVE` | CI / PR / merge |
+| High-risk architecture/spec decision should be challenged | `/adversarial-check` or built-in adversarial path |
+| Adversarial findings require revision of existing architecture/spec | `RECONCILE_ONLY`, not full re-authoring |
+
+---
+
+# 6. Artifact Invalidation Rules
+
+A workflow should resume from the **earliest invalidated authority stage**, not necessarily from the command that failed last.
+
+## 6.1 Product decision changed
+
+If an approved product requirement or acceptance criterion materially changes:
+
+```text
+/prd
+→ /architect if architecture may be affected
+→ /project-init if technical baseline/repo rules may be affected
+→ /spec
+→ /implement or /fix
+→ /verify
+→ /review
+```
+
+Do not retain downstream artifacts that contradict the new product requirement.
+
+## 6.2 Architecture decision changed
+
+If architecture, persistence strategy, public system boundary, reliability/security guarantee, or major technology changes:
+
+```text
+/architect
+→ /project-init
+→ /spec
+→ /implement or /fix
+→ /verify
+→ /review
+```
+
+Do not skip project-init when repository instructions, verification commands, skills, or technology baseline need synchronization.
+
+## 6.3 Project initialization changed only
+
+If architecture is unchanged but project rules/tooling are incomplete:
+
+```text
+/project-init
+→ /spec only if spec assumptions need regeneration
+→ otherwise resume implementation/fix
+→ /verify
+→ /review
+```
+
+## 6.4 Specification changed
+
+If implementation requirements or acceptance criteria change without changing product/architecture authority:
+
+```text
+/spec
+→ /implement or /fix
+→ /verify
+→ /review
+```
+
+## 6.5 Implementation changed
+
+Any implementation-state change after reusable verification evidence requires:
+
+```text
+/verify
+```
+
+before review can proceed.
+
+## 6.6 Review findings changed code
+
+After `/fix` changes implementation:
+
+```text
+/verify
+→ /review
+```
+
+Never jump directly from `/fix` back to senior review.
+
+---
+
+# 7. Phase 0 — Static Release Gate
+
+**Cost: zero/negligible**
+
+Run before any end-to-end smoke workflow.
+
+Confirm:
+
+## 7.1 Commands exist
+
+Expected commands:
+
+- `/grill`
+- `/prd`
+- `/architect`
+- `/project-init`
+- `/spec`
+- `/implement`
+- `/verify`
+- `/review`
+- `/fix`
+- `/diagnose`
+- `/waive`
+- `/adversarial-check`
+
+## 7.2 Planning modes
+
+Confirm `planning-worker` supports:
 
 - `AUTHOR`
 - `CONTINUE`
 - `RECONCILE_ONLY`
 
-Confirm adversarial reconciliation uses `RECONCILE_ONLY` instead of rerunning the complete authoring workflow.
+If no valid mode is supplied, the worker must not guess.
 
-## 0.3 Model routing
+## 7.3 Model routing
 
-Confirm:
+Confirm normal lifecycle does not require Claude.
 
-- GPT-5.6 Sol: reasoning/planning and senior review
-- GPT-5.6 Luna: project initialization/light orchestration
-- DeepSeek Flash: implementation, verification, fix, diagnosis, pre-review, default adversary
-- Claude Sonnet/Opus: optional paid escalation only
+## 7.4 Architecture cost policy
 
-Confirm no mandatory Claude call exists in the normal lifecycle.
+Confirm architecture still treats cloud/operating cost as first-class and evaluates:
 
-## 0.4 Security and cost policy
+- fixed recurring cost
+- variable cost
+- storage cost
+- network/data transfer
+- observability cost
+- scaling behavior
+- operational burden
+- cost drivers
+- cost risks
+- irreversible recurring-cost/platform commitments
 
-Confirm:
+## 7.5 Evidence contract
 
-- OWASP Top 10:2025 risk taxonomy remains referenced
-- security-verification skill remains present
-- cloud/operating cost remains a first-class architecture requirement
-- fixed, variable, storage, network, observability, scaling, and operational-burden costs remain considered
-
-## 0.5 Evidence contract
-
-Confirm the following files are byte-for-byte identical:
+Confirm these are byte-for-byte identical:
 
 ```text
-kilo-configuration:
 kilo/contracts/implementation-state-evidence-v1.md
 
-production-ai-project:
 docs/workflow/IMPLEMENTATION-STATE-EVIDENCE-V1.md
 ```
 
-Confirm Contract v1 contains:
+Confirm contract includes:
 
 - canonical manifest authority
 - path identity
-- effective Git mode/type identity
+- effective Git mode/type
 - content/blob identity
 - `MATCH`
 - `MISMATCH`
 - `UNRECONSTRUCTABLE`
-- fixed evidence exclusion set
+- exact evidence exclusion set
 - ignored-file boundary
-- verification-environment boundary
+- environment boundary
 - waiver binding
-- fail-closed malformed evidence behavior
+- fail-closed semantics
 
-### Phase 0 pass condition
-
-All static invariants are present with no contradiction.
-
-If Phase 0 fails, do not spend model budget on runtime smoke tests.
+If Phase 0 fails, stop.
 
 ---
 
-# Phase 1 — Project Initialization Contract
+# 8. Phase 1 — /grill
 
-**Expected paid/model use: GPT-5.6 Luna only if project-init must actually run**
+## When to run
 
-Use a disposable project repository or resettable smoke branch.
+Run `/grill` when the product idea is:
 
-Run `/project-init` only if necessary for the chosen fixture.
+- ambiguous
+- broad
+- coupled
+- high-stakes
+- unclear on priorities/trade-offs
+- missing important decisions
 
-## Validate
+Skip `/grill` when product intent is already sufficiently clear for PRD authoring.
 
-Project initialization must ensure:
+Skipping is valid.
+
+## Inputs
+
+Provide the product idea and relevant constraints.
+
+The user does not need to answer questions whose answers can be safely discovered from existing repository artifacts or authoritative sources.
+
+## Expected behavior
+
+The workflow should:
+
+- inspect discoverable facts before asking
+- ask only unresolved frontier questions
+- avoid prematurely choosing architecture
+- persist discovery under `docs/discovery/`
+
+## Expected statuses
+
+Success:
+
+```text
+DISCOVERY_READY
+```
+
+Blocked:
+
+```text
+DISCOVERY_BLOCKED
+```
+
+## Resume rules
+
+If `DISCOVERY_BLOCKED`:
+
+1. resolve the specific unanswered product decision,
+2. rerun `/grill`,
+3. do not restart unrelated settled questions.
+
+If a discovery artifact already exists and remains valid, do not rerun `/grill` merely because a later stage failed.
+
+## Next step
+
+```text
+DISCOVERY_READY → /prd
+```
+
+---
+
+# 9. Phase 2 — /prd
+
+## When to run
+
+Run when:
+
+- discovery is ready, or
+- discovery was legitimately skipped because requirements are already clear.
+
+## Reuse existing PRD
+
+If an approved PRD already exists and the product intent has not materially changed, do not rerun `/prd`.
+
+Resume downstream.
+
+## Expected behavior
+
+PRD should define product requirements and constraints without inventing architecture.
+
+Persist approved PRD under:
+
+```text
+docs/prd/
+```
+
+## Expected statuses
+
+```text
+PRD_READY
+```
+
+or:
+
+```text
+PRD_BLOCKED
+```
+
+## If blocked
+
+Typical owner:
+
+```text
+PRODUCT
+```
+
+Typical next command:
+
+```text
+/prd
+```
+
+after user clarification.
+
+## Regression test
+
+Create one deliberate unresolved product decision.
+
+Confirm:
+
+- PRD refuses to invent the answer
+- returns `PRD_BLOCKED`
+- points to the exact missing decision
+- rerunning after clarification resolves only that issue
+
+## Next step
+
+```text
+PRD_READY → /architect
+```
+
+---
+
+# 10. Phase 3 — /architect
+
+## Preconditions
+
+Require:
+
+- approved PRD
+- relevant existing architecture/ADRs when modifying an existing system
+
+Do not start architecture from an unapproved or blocked PRD.
+
+## What architecture owns
+
+Architecture chooses major technical decisions.
+
+Smoke-test that it covers, where relevant:
+
+- language/runtime
+- framework
+- persistence
+- cloud/provider
+- IaC
+- networking
+- security
+- observability
+- reliability
+- deployment
+- operational burden
+- operating/cloud cost
+
+## Operating-cost validation
+
+Explicitly confirm the architecture documents:
+
+- estimated cloud cost
+- fixed recurring cost
+- usage-based/variable behavior
+- major cost drivers
+- cost risks
+- operational burden
+
+The smoke test should fail if cost is silently ignored in a cloud architecture.
+
+## Expected statuses
+
+```text
+ARCHITECTURE_READY
+```
+
+or:
+
+```text
+ARCHITECTURE_BLOCKED
+```
+
+## Blocked routing
+
+Product ambiguity:
+
+```text
+owner: PRODUCT
+next: /prd
+```
+
+Technical decision unresolved:
+
+```text
+owner: ARCHITECTURE
+next: /architect
+```
+
+Explicit premium/user decision required:
+
+```text
+owner: USER_APPROVAL
+next: /architect
+```
+
+## Repetition rule
+
+Do not rerun the full architecture workflow merely because an adversarial check found a bounded issue.
+
+Use:
+
+```text
+MODE: RECONCILE_ONLY
+```
+
+against:
+
+- existing architecture
+- affected ADRs
+- findings
+- relevant contract/invariants
+
+## Next step
+
+```text
+ARCHITECTURE_READY → /project-init
+```
+
+---
+
+# 11. Phase 4 — /project-init
+
+## Preconditions
+
+Require:
+
+- approved PRD
+- `ARCHITECTURE_READY`
+- relevant ADRs
+
+## Responsibilities
+
+Project-init operationalizes architecture.
+
+It should update/preserve:
+
+- `AGENTS.md`
+- `README.md`
+- `.kilo/rules/`
+- `.kilo/skills/`
+
+It must ensure:
 
 ```text
 docs/discovery/
@@ -254,80 +710,345 @@ docs/reviews/
 docs/workflow/
 ```
 
-It must also ensure:
+and:
 
 ```text
 docs/workflow/IMPLEMENTATION-STATE-EVIDENCE-V1.md
 ```
 
-The project copy must be byte-for-byte identical to the global canonical contract.
+The project evidence contract must be synchronized verbatim with the global canonical contract.
 
-### Negative test
+## Expected statuses
 
-Temporarily make exact contract synchronization impossible in the disposable environment.
+```text
+PROJECT_INIT_READY
+```
 
-Expected result:
+or:
 
 ```text
 PROJECT_INIT_BLOCKED
 ```
 
-The workflow must not silently create an independently summarized contract.
+## Blocked routing
 
-Restore the disposable environment before continuing.
+Architecture conflict/missing decision:
+
+```text
+/architect
+```
+
+Repository-local initialization issue:
+
+```text
+/project-init
+```
+
+Approval needed:
+
+```text
+/project-init
+```
+
+after approval.
+
+## Resume rule
+
+If project-init is already ready and architecture has not changed, do not rerun it merely because a spec or implementation failed.
+
+## Negative test
+
+Make exact evidence-contract synchronization unavailable.
+
+Expected:
+
+```text
+PROJECT_INIT_BLOCKED
+```
+
+No independently summarized replacement contract is acceptable.
+
+## Next step
+
+```text
+PROJECT_INIT_READY → /spec
+```
 
 ---
 
-# Phase 2 — First-Spec, Fully Uncommitted Implementation
-
-This is a critical Stable-v0.1 scenario.
-
-**Expected model use: DeepSeek Flash for implementation and verification**
+# 12. Phase 5 — /spec
 
 ## Preconditions
 
-The repository must already have an existing baseline HEAD from project/template initialization.
+Require:
 
-The smoke implementation itself must have **no implementation commit**.
+- approved PRD
+- `ARCHITECTURE_READY`
+- `PROJECT_INIT_READY`
+- project `AGENTS.md` aligned with approved stack
 
-Create or use one small approved smoke specification.
+## Expected behavior
 
-Run:
+Specifications should be independently implementable.
+
+For greenfield work, explicitly create bootstrap/CI/repository setup specifications where required instead of pretending those capabilities already exist.
+
+Each spec should include:
+
+- scope
+- relevant architecture
+- acceptance criteria
+- testing expectations
+- TDD applicability
+- security verification needs
+- DoD
+
+Definition of Done must ultimately require:
 
 ```text
-/implement
+/verify → DONE + CLEAR
 ```
 
-Do not commit the resulting source or test changes.
+or a valid separate:
 
-Confirm Git shows implementation changes as:
+```text
+CLEAR_WITH_EXCEPTION
+```
 
-- modified tracked files, and/or
+## Expected statuses
+
+```text
+SPEC_READY
+```
+
+or:
+
+```text
+SPEC_BLOCKED
+```
+
+## Blocked routing
+
+Requirement ambiguity:
+
+```text
+/prd
+```
+
+Architecture issue:
+
+```text
+/architect
+```
+
+Initialization issue:
+
+```text
+/project-init
+```
+
+Local decomposition issue:
+
+```text
+/spec
+```
+
+## Adversarial repetition rule
+
+If a spec is challenged:
+
+- do not regenerate the whole specification set
+- use `RECONCILE_ONLY`
+- supply the challenged spec + findings + minimum required architecture/contract context
+
+## Resume rule
+
+If several specs already exist and only one is being implemented, do not rerun `/spec` for completed unaffected specs.
+
+## Next step
+
+```text
+SPEC_READY → /implement
+```
+
+for one selected specification.
+
+---
+
+# 13. Phase 6 — /implement
+
+## Preconditions
+
+Require:
+
+- approved implementation-ready spec
+- approved architecture
+- initialized project context
+- correct specification branch/worktree
+
+## Branch behavior
+
+Preferred branch:
+
+```text
+spec/<spec-id>-<short-description>
+```
+
+If an appropriate branch already exists, reuse it.
+
+Do not automatically discard unrelated work.
+
+## TDD behavior
+
+Where applicable:
+
+```text
+red
+→ green
+→ next thin slice
+```
+
+If TDD is required but the spec lacks a viable observable seam:
+
+```text
+IMPLEMENTATION_BLOCKED
+owner: SPECIFICATION
+next: /spec
+```
+
+Do not invent brittle private-method tests.
+
+## Expected success status
+
+```text
+IMPLEMENTATION_READY_FOR_VERIFY
+```
+
+## Expected blocked status
+
+```text
+IMPLEMENTATION_BLOCKED
+```
+
+## Blocked routing
+
+Repository/environment issue:
+
+```text
+fix repository/environment
+→ /implement
+```
+
+Spec issue:
+
+```text
+/spec
+```
+
+Architecture issue:
+
+```text
+/architect
+```
+
+Approval for a valid new dependency:
+
+```text
+approve
+→ /implement
+```
+
+## Critical first-spec test
+
+For the smoke fixture, do **not commit** the implementation after `/implement`.
+
+The first implementation may consist entirely of:
+
+- modified tracked files
 - untracked non-ignored files
 
-Then run:
+That state must still be verifiable.
+
+## Next step
 
 ```text
-/verify
+IMPLEMENTATION_READY_FOR_VERIFY → /verify
 ```
 
-## Expected verification behavior
+---
 
-The verification report must record:
+# 14. Phase 7 — /verify
 
+## When to run
+
+Run after:
+
+- `/implement`
+- `/fix`
+- any identity-bearing implementation change
+- stale verification evidence
+- `MISMATCH`
+- `UNRECONSTRUCTABLE`
+
+## First-spec/no-commit scenario
+
+The repository must already have a baseline HEAD.
+
+The implementation itself does not need a commit.
+
+The canonical implementation-state manifest must capture:
+
+- changed tracked paths
+- untracked non-ignored paths
+- effective Git mode/type
+- blob/content identity
+
+## Expected evidence
+
+Persist a new report under:
+
+```text
+docs/verification/
+```
+
+Include:
+
+- verification ID
+- spec/change identity
 - branch
 - verification base HEAD
-- `implementation-state-evidence-v1`
-- canonical implementation-state manifest
-- implementation-state fingerprint
-- pre/post freshness outcome
-- verification commands and results
-- acceptance-criterion evidence
-- materially relevant environment facts
+- evidence contract version
+- canonical manifest
+- fingerprint
+- freshness result
+- executed commands
+- acceptance criteria
+- security evidence
+- environment assumptions
+- result
+- delivery gate
 
-The canonical manifest must include every identity-bearing implementation path even though those files are uncommitted.
+## Verification truth
 
-Expected state when checks pass and no verification command mutates implementation state:
+Only:
+
+```text
+DONE
+NOT_DONE
+```
+
+## Delivery gate
+
+Possible states:
+
+```text
+CLEAR
+BLOCKED
+```
+
+`CLEAR_WITH_EXCEPTION` is never created inside `/verify`.
+
+## Expected success
 
 ```text
 Verification Result: DONE
@@ -335,60 +1056,155 @@ Delivery Gate: CLEAR
 Freshness: MATCH
 ```
 
-### Pass condition
+## Expected failure
 
-A first-spec implementation can reach `CLEAR` without an implementation commit.
+```text
+Verification Result: NOT_DONE
+Delivery Gate: BLOCKED
+```
 
-A dirty working tree by itself must not be treated as a blocker.
+## Checks pass but repository changes during verification
+
+Expected:
+
+```text
+Verification Result: DONE
+Freshness: MISMATCH or UNRECONSTRUCTABLE
+Delivery Gate: BLOCKED
+```
+
+Then rerun `/verify` after stabilizing the state.
+
+## Routing from NOT_DONE
+
+Known repair:
+
+```text
+/fix
+```
+
+Unclear/intermittent:
+
+```text
+/diagnose
+```
+
+Explicit accepted waivable risk:
+
+```text
+/waive
+```
 
 ---
 
-# Phase 3 — Review Before Commit
+# 15. Phase 8 — /review before commit
 
-Immediately after Phase 2, with the verified implementation still uncommitted, run:
+Immediately after a successful first-spec verification, leave implementation uncommitted.
+
+Run:
 
 ```text
 /review
 ```
 
-## Expected behavior
+## Pre-review gate
 
-Before invoking any reviewer:
+Before any reviewer model:
 
-- applicable verification evidence is selected by specification/change + branch
-- current canonical manifest is reconstructed relative to the recorded base HEAD
-- current manifest is byte-for-byte identical to the persisted manifest
-- freshness is `MATCH`
+- choose latest applicable verification report
+- validate same spec/change
+- validate same branch
+- reconstruct manifest from recorded base HEAD
+- require canonical byte-for-byte `MATCH`
 
-Then:
+If no applicable evidence exists:
 
-1. DeepSeek pre-review runs
-2. if it returns `READY_FOR_SENIOR_REVIEW`, GPT-5.6 Sol senior review runs
-3. review evidence is persisted under `docs/reviews/`
+```text
+STOP
+→ /verify
+```
 
-### Pass condition
+If stale:
 
-Review is allowed before the implementation is committed.
+```text
+STOP
+→ /verify
+```
 
-The workflow must not demand a commit solely to establish freshness.
+## Review sequence
+
+1. DeepSeek pre-review
+2. if `READY_FOR_SENIOR_REVIEW`, GPT-5.6 Sol senior review
+3. persist one review artifact
+
+## Pre-review blocker
+
+Expected:
+
+```text
+CHANGES_REQUIRED
+Senior Review: NOT_RUN
+```
+
+Next:
+
+```text
+/fix
+→ /verify
+→ /review
+```
+
+## Senior blocker
+
+Expected:
+
+```text
+REQUEST CHANGES
+```
+
+Next:
+
+```text
+/fix
+→ /verify
+→ /review
+```
+
+## Success
+
+Expected:
+
+```text
+APPROVE
+```
+
+Next:
+
+```text
+CI
+→ PR
+→ merge
+```
+
+## Pass condition
+
+Review succeeds while implementation is still uncommitted.
+
+No artificial commit requirement exists.
 
 ---
 
-# Phase 4 — Commit Identical Verified State
+# 16. Phase 9 — Commit identical verified state
 
-After successful verification/review of the uncommitted implementation:
+After successful verification/review:
 
-1. commit the exact verified implementation contents,
-2. do not modify those contents,
-3. keep workflow evidence changes separate from implementation identity as defined by the contract.
+1. commit the exact implementation state,
+2. do not change contents,
+3. do not change effective Git mode/type.
 
-Then run freshness validation again through `/review` or the minimum supported review-entry path.
+Re-enter `/review` freshness checking.
 
-## Expected behavior
-
-HEAD is now different from verification-time HEAD.
-
-However, reconstruction relative to the original verification base HEAD must produce the **same canonical implementation-state manifest**.
+HEAD now differs from verification-time HEAD.
 
 Expected:
 
@@ -396,70 +1212,19 @@ Expected:
 MATCH
 ```
 
-### Pass condition
-
-A later commit of identical verified state does **not** invalidate verification.
-
-Commit identity must not be mistaken for implementation-state identity.
+A later commit of identical verified state must remain valid.
 
 ---
 
-# Phase 5 — Content Mutation Invalidates Evidence
+# 17. Phase 10 — Content mutation stale-evidence test
 
-Starting from a fresh valid verified state:
+Start from fresh verified evidence.
 
-1. change one implementation byte in an identity-bearing source/test/configuration path,
-2. do not rerun verification,
-3. invoke `/review`.
+Modify one identity-bearing byte.
 
-## Expected behavior
+Do not rerun verification.
 
-Review must stop **before pre-review**.
-
-Expected freshness:
-
-```text
-MISMATCH
-```
-
-Expected action:
-
-```text
-fresh /verify required
-```
-
-### Pass condition
-
-The same HEAD cannot make evidence appear fresh when working-tree contents changed.
-
-No reviewer model should be called after freshness failure.
-
----
-
-# Phase 6 — Git Mode/Type Mutation Invalidates Evidence
-
-This validates the final Stable-v0.1 hardening.
-
-Use a disposable file where Git mode can be represented reliably on the test environment.
-
-Examples:
-
-- regular file `100644` → executable `100755`
-- regular file → symbolic link where reliably supported
-- another deterministic Git mode/type transition supported by the environment
-
-Do not change the file contents if testing executable-bit identity.
-
-## Procedure
-
-1. establish fresh verification with `MATCH`,
-2. change only effective Git mode/type,
-3. do not rerun verification,
-4. invoke review freshness validation.
-
-## Expected behavior
-
-Canonical manifest differs even when blob contents are identical.
+Run `/review`.
 
 Expected:
 
@@ -467,68 +1232,71 @@ Expected:
 MISMATCH
 ```
 
-If the current platform cannot determine the effective Git mode/type reliably, expected:
+Review must stop before pre-review.
+
+Next:
+
+```text
+/verify
+```
+
+---
+
+# 18. Phase 11 — Git mode/type identity test
+
+Establish fresh evidence.
+
+Change only mode/type, where reliably supported:
+
+- `100644 → 100755`
+- file → symlink
+- gitlink transition
+
+Do not alter content if testing executable bit.
+
+Expected:
+
+```text
+MISMATCH
+```
+
+If platform cannot reliably determine mode/type:
 
 ```text
 UNRECONSTRUCTABLE
 ```
 
-In both cases review must fail closed.
+Both must fail closed.
 
-### Windows note
-
-Windows may not expose executable-bit semantics in the same way as Unix-like filesystems.
-
-Do not fake a result.
-
-If the selected mode transition cannot be represented/detected reliably under the current Git/filesystem configuration, record `UNRECONSTRUCTABLE` for that case or run this specific test in an appropriate Git-compatible environment such as WSL.
+On Windows, use WSL for the specific mode test if necessary rather than faking mode semantics.
 
 ---
 
-# Phase 7 — Verification Command Mutates Implementation State
+# 19. Phase 12 — Verification mutation test
 
-This tests pre/post verification stability.
+Use a disposable verification behavior that changes an identity-bearing non-evidence path while verification runs.
 
-Use a disposable verification command or fixture behavior that intentionally changes one non-evidence identity-bearing file while verification executes.
-
-Do not weaken or alter real quality checks merely to make this scenario.
-
-## Expected behavior
-
-Required checks may all pass factually.
-
-The verification result may therefore be:
+Expected:
 
 ```text
 Verification Result: DONE
-```
-
-But pre/post canonical manifests differ.
-
-Expected delivery state:
-
-```text
 Freshness: MISMATCH
 Delivery Gate: BLOCKED
 ```
 
-Expected next action:
+assuming checks themselves pass.
+
+Then restore/stabilize and rerun:
 
 ```text
 /verify
 ```
 
-after stabilizing the repository.
-
-### Pass condition
-
-A green test command is not sufficient when the code changed during verification.
-
 ---
 
-# Phase 8 — Normal Failure and Fix Loop
+# 20. Phase 13 — /fix loop
 
-Introduce one simple deterministic implementation defect.
+Introduce a deterministic defect.
 
 Run:
 
@@ -539,135 +1307,173 @@ Run:
 Expected:
 
 ```text
-Verification Result: NOT_DONE
-Delivery Gate: BLOCKED
+NOT_DONE
+BLOCKED
 ```
 
-Confirm a history-preserving verification report is written.
-
-Then run:
+Then:
 
 ```text
 /fix
 ```
 
-The fix workflow must consume the latest **applicable** persisted evidence for this specification/change and branch.
+## Fix evidence priority
 
-Then rerun:
+Fix should consume latest applicable:
+
+1. review report
+2. verification report
+3. diagnosis artifact
+4. relevant specification/contract
+
+Do not rely on chat history when persisted evidence exists.
+
+If implementation advanced since evidence was written, first confirm historical findings still apply.
+
+## Expected fix success
+
+The fix command does not return `DONE`.
+
+After repair:
 
 ```text
 /verify
 ```
 
-Expected after a correct fix:
+## FIX_BLOCKED routing
+
+Product issue:
 
 ```text
-Verification Result: DONE
-Delivery Gate: CLEAR
-Freshness: MATCH
+/prd
 ```
 
-### Pass condition
+Architecture issue:
 
-No historical `NOT_DONE` report is overwritten.
+```text
+/architect
+```
 
-The new verification produces a new report.
+Project-init mismatch:
+
+```text
+/project-init
+```
+
+Spec issue:
+
+```text
+/spec
+```
+
+Repository issue:
+
+```text
+/fix
+```
+
+after repository correction.
+
+When an upstream stage changes, rerun required downstream stages.
 
 ---
 
-# Phase 9 — Optional Diagnosis Loop
+# 21. Phase 14 — /diagnose loop
 
-Run this phase only if a bounded deterministic diagnostic fixture can be created cheaply.
+Use only when root cause is genuinely unclear, intermittent, concurrent, integration-related, performance-related, or otherwise difficult.
 
-Otherwise mark it:
-
-```text
-NOT_EXECUTED — already covered by prior smoke testing / no cost-effective diagnostic fixture
-```
-
-For an unclear or intermittent failure:
+Expected flow:
 
 ```text
 /verify
 → NOT_DONE
 → /diagnose
+→ DIAGNOSIS_READY
 → /fix
 → /verify
 ```
 
-Validate:
+Diagnosis persists under:
 
-- diagnosis persists under `docs/diagnostics/`
-- diagnosis does not redefine intended behavior
-- fix consumes relevant diagnosis/evidence
-- fresh verification is required afterward
+```text
+docs/diagnostics/
+```
 
-Do not manufacture an elaborate flaky system merely to exercise this path.
+Expected statuses:
+
+```text
+DIAGNOSIS_READY
+DIAGNOSIS_BLOCKED
+```
+
+If blocked because evidence/environment access is missing, obtain only the minimum missing input and rerun `/diagnose`.
+
+Do not invent a complex flaky system solely for smoke testing. This phase may be marked optional if no cheap deterministic diagnostic fixture exists.
 
 ---
 
-# Phase 10 — Human Waiver Flow
+# 22. Phase 15 — /waive loop
 
-Create a safe, deliberately chosen smoke failure that project policy allows the human owner to accept temporarily.
-
-Do **not** use a security-critical or destructive failure merely for testing.
-
-Start from:
+Use only from a real:
 
 ```text
 Verification Result: NOT_DONE
-Delivery Gate: BLOCKED
 ```
 
-Run:
+for a policy-allowed bounded risk.
+
+A waiver must never turn verification truth into `DONE`.
+
+## Required human input
+
+Require explicit:
+
+- acceptance
+- justification
+- residual risk
+- compensating controls/evidence
+- remediation
+- expiry
+
+## Expected status
+
+Valid:
 
 ```text
-/waive
+WAIVER_APPROVED
 ```
 
-Provide explicit human authorization, bounded expiry, justification, residual risk, and remediation.
+Invalid/missing input/non-waivable:
 
-## Expected waiver behavior
+```text
+WAIVER_BLOCKED
+```
 
-The waiver must remain separate from the verification report.
+## Effective gate
 
-It must bind to:
-
-- exact verification report
-- canonical implementation-state manifest
-- fingerprint
-- exact accepted failure set
-- expiry
-- human authorization
-
-Expected effective gate:
+Valid waiver establishes:
 
 ```text
 Verification Result: NOT_DONE
 Delivery Gate: CLEAR_WITH_EXCEPTION
 ```
 
-The original verification truth remains `NOT_DONE`.
-
-Then run:
+Then:
 
 ```text
 /review
 ```
 
-Reviewers receive both:
+Review receives both:
 
-- original failed verification evidence
-- active waiver
+- failed verification report
+- waiver
 
-### Negative test
+## Stale-waiver test
 
-Change one implementation-state identity field after the waiver:
+Change content or mode/type after waiver.
 
-- content, or
-- mode/type
-
-Then attempt review again without fresh verification/waiver.
+Attempt review.
 
 Expected:
 
@@ -675,57 +1481,48 @@ Expected:
 MISMATCH
 ```
 
-and the waiver must no longer authorize review of that state.
+Waiver must not authorize the changed implementation.
 
 ---
 
-# Phase 11 — Malformed/Unreconstructable Evidence Fails Closed
+# 23. Phase 16 — malformed evidence test
 
-Use only disposable copied evidence.
+Use copied disposable evidence.
 
-Do not corrupt canonical repository history.
+Create one case where freshness cannot be reliably proven:
 
-Test one inexpensive case such as:
+- missing required field
+- unavailable base HEAD
+- malformed canonical manifest
+- mode/type ambiguity
+- other reconstruction failure
 
-- remove a required field from a copied verification report,
-- make the recorded base HEAD unavailable in a disposable shallow/altered environment,
-- otherwise make exact reconstruction impossible without changing production artifacts.
-
-## Expected behavior
-
-Freshness:
+Expected:
 
 ```text
 UNRECONSTRUCTABLE
 ```
 
-Review/waiver use stops.
-
-Expected next action:
+Then:
 
 ```text
 /verify
 ```
 
-### Pass condition
+No reviewer should run.
 
-The workflow does not infer freshness from:
+Do not infer freshness from:
 
-- current HEAD
-- matching fingerprint alone
-- a newer unrelated verification report
+- HEAD equality
+- fingerprint equality alone
 - chat history
+- newer unrelated reports
 
 ---
 
-# Phase 12 — Evidence-Path Exclusion Test
+# 24. Phase 17 — evidence exclusion test
 
-Starting from fresh verified implementation state:
-
-1. add only a new verification/review/diagnostic evidence artifact under an excluded path,
-2. do not alter implementation identity.
-
-Normative excluded paths are exactly:
+Excluded paths:
 
 ```text
 docs/verification/**
@@ -733,19 +1530,15 @@ docs/reviews/**
 docs/diagnostics/**
 ```
 
-## Expected behavior
+Add/change only evidence there.
 
-The implementation-state canonical manifest remains unchanged.
-
-Freshness remains:
+Expected implementation freshness:
 
 ```text
 MATCH
 ```
 
-### Counter-test
-
-Modify one of:
+Then change one identity-bearing path such as:
 
 ```text
 docs/specs/**
@@ -753,10 +1546,10 @@ docs/architecture/**
 docs/adr/**
 AGENTS.md
 .kilo/**
-source/test files
+source/tests
 build/package configuration
 lockfiles
-CI/IaC configuration
+CI/IaC
 ```
 
 Expected:
@@ -767,41 +1560,181 @@ MISMATCH
 
 ---
 
-# Phase 13 — Narrow Adversarial Reconciliation
+# 25. Phase 18 — /adversarial-check
 
-This phase validates orchestration, not Claude routing.
+Use for a bounded high-risk architecture/spec decision.
 
-Use DeepSeek as the default adversary.
-
-Choose one small architecture/spec artifact with a deliberately challengeable but bounded decision.
-
-Run the appropriate adversarial path.
-
-When findings require reconciliation, confirm the planning worker receives:
+Default adversary:
 
 ```text
-RECONCILE_ONLY
+DeepSeek
 ```
 
-## Expected behavior
+The orchestrator should extract:
 
-Reconciliation reads only the challenged artifact plus the minimum affected contract/ADR/spec context.
+- smallest artifact
+- contract/invariants
+- relevant risk
 
-It must not restart the entire authoring workflow.
+The adversary challenges rather than re-authors.
 
-At most one targeted follow-up adversarial pass should occur when the challenged decision materially changes, according to current workflow policy.
+## No-material finding
 
-### Pass condition
+Continue the owning workflow.
 
-No full `AUTHOR` rerun occurs merely because adversarial findings were returned.
+## Material finding
 
-No Claude call is required.
+Owning model reconciles.
+
+When planning-worker is used:
+
+```text
+MODE: RECONCILE_ONLY
+```
+
+Do not rerun full `AUTHOR`.
+
+One additional default adversarial pass is allowed only if reconciliation materially changes the challenged decision.
+
+Do not automatically cycle indefinitely.
 
 ---
 
-# Phase 14 — Review Persistence and Blocking Behavior
+# 26. Phase 19 — Restart from an arbitrary middle stage
 
-Create or retain one case where the DeepSeek pre-reviewer finds a genuine blocking defect.
+This phase specifically validates that the workflow can be followed without prior conversational baggage.
+
+Create separate restart scenarios.
+
+## Scenario A — approved architecture already exists
+
+Start a fresh chat/session.
+
+Provide only repository access.
+
+Expected behavior:
+
+- agent discovers existing PRD/architecture
+- does not rerun `/grill` or `/prd`
+- starts at `/project-init` if initialization is incomplete
+
+## Scenario B — project-init already ready
+
+Fresh session.
+
+Expected:
+
+- discovers project baseline and artifacts
+- starts at `/spec`
+
+## Scenario C — approved spec exists
+
+Fresh session.
+
+Expected:
+
+- identifies relevant spec
+- starts at `/implement`
+
+## Scenario D — implementation exists, no verification
+
+Fresh session.
+
+Expected:
+
+- starts at `/verify`
+
+## Scenario E — valid fresh verification exists
+
+Fresh session.
+
+Expected:
+
+- starts at `/review`
+
+## Scenario F — stale verification exists
+
+Fresh session.
+
+Expected:
+
+- detects stale state
+- requires `/verify`
+- does not trust prior chat
+
+## Scenario G — review blocker exists
+
+Fresh session.
+
+Expected:
+
+- `/fix` consumes persisted review evidence
+- no need to reproduce reviewer conversation
+
+## Pass condition
+
+Persisted repository artifacts are sufficient to determine the correct continuation point.
+
+Chat memory must not be required.
+
+---
+
+# 27. Phase 20 — upstream-change rerouting tests
+
+Validate that blocked workflows route to authority rather than inventing decisions.
+
+## Architecture discovers product ambiguity
+
+Expected:
+
+```text
+ARCHITECTURE_BLOCKED
+→ /prd
+```
+
+## Spec discovers architecture ambiguity
+
+Expected:
+
+```text
+SPEC_BLOCKED
+→ /architect
+```
+
+## Implementation requires unapproved architecture change
+
+Expected:
+
+```text
+IMPLEMENTATION_BLOCKED
+→ /architect
+```
+
+## Fix reveals requirement contradiction
+
+Expected:
+
+```text
+FIX_BLOCKED
+→ /prd
+```
+
+## Fix reveals architecture defect
+
+Expected:
+
+```text
+FIX_BLOCKED
+→ /architect
+```
+
+After upstream correction, explicitly regenerate invalidated downstream artifacts.
+
+---
+
+# 28. Phase 21 — Review persistence/cost gate
+
+Create a genuine pre-review blocker.
 
 Run:
 
@@ -816,34 +1749,37 @@ CHANGES_REQUIRED
 Senior Review: NOT_RUN
 ```
 
-The review report must persist:
+Persist review report.
 
-- complete pre-review findings
-- senior review status `NOT_RUN`
-- reason senior review was skipped
-- next action `/fix → /verify → /review`
+GPT-5.6 Sol senior reviewer must not run.
 
-GPT-5.6 Sol senior review must not run.
+After:
 
-After fixing and freshly verifying the issue, rerun review.
+```text
+/fix
+→ /verify
+→ /review
+```
 
-### Pass condition
+senior review may run only if pre-review returns:
 
-Expensive senior review is skipped while cheap pre-review blockers remain.
+```text
+READY_FOR_SENIOR_REVIEW
+```
 
 ---
 
-# Phase 15 — Static Claude Routing Check
+# 29. Phase 22 — Static Claude routing
 
-**Do not invoke Claude.**
+Do not invoke Claude.
 
-Inspect released configuration and confirm:
+Confirm:
 
-- Sonnet adversary exists
-- Opus adversary exists
-- permission requires approval where designed
-- explicit user selection can route to Claude
-- no normal smoke-test stage requires Claude
+- Sonnet route exists
+- Opus route exists
+- user-directed invocation can select them
+- agent-proposed paid escalation requires approval
+- normal smoke path does not require them
 
 Record:
 
@@ -851,129 +1787,207 @@ Record:
 CLAUDE_RUNTIME_TEST: NOT_RUN_BY_POLICY
 ```
 
-This is a pass when static routing is correct.
-
-A real paid cross-model invocation can be validated later during genuine project work or an explicitly approved isolated test.
-
 ---
 
-# Smoke-Test Evidence
+# 30. Required Smoke-Test Report
 
-Create a smoke-test report in a disposable project location such as:
+Persist execution evidence in the disposable project, for example:
 
 ```text
 docs/verification/SMOKE-STABLE-V0.1-001.md
 ```
 
-The report should contain:
+Include:
 
-## Release Identity
+## Release identity
 
-- Kilo configuration tag/SHA
-- test-project baseline SHA
-- Kilo version
-- Git version
-- OS/environment
+- tag/SHA
+- project baseline SHA
+- tool versions
+- OS
 
-## Cost Summary
+## Entry point used
 
-Record, where observable:
-
-- DeepSeek usage/cost
-- OpenAI invocation count
-- Claude invocation count
-- Claude spend
-
-Expected default:
+Record where the run began:
 
 ```text
-Claude invocation count: 0
-Claude spend: 0
+START_STAGE:
+WHY:
+EXISTING_ARTIFACTS_REUSED:
+ARTIFACTS_DECLARED_STALE:
 ```
 
-## Scenario Results
+This is required because the workflow may start from any valid stage.
 
-For every phase:
+## Model usage
 
-- executed / not executed
-- PASS / FAIL / NOT_APPLICABLE
-- relevant artifact paths
-- model invoked
-- concise evidence
-- defect reference when failed
+For each invocation:
 
-## Defects
+- workflow
+- model
+- purpose
+- approximate observed cost/usage when available
 
-Classify failures as:
+## Scenario table
 
-- FRAMEWORK_DEFECT
-- TEST_FIXTURE_DEFECT
-- ENVIRONMENT_LIMITATION
-- MODEL_VARIANCE
-- DOCUMENTATION_DEFECT
+| Scenario | Starting state | Command | Expected | Actual | Result | Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
 
-Do not silently patch the Stable-v0.1 tag during the test.
+## Cost summary
 
-Any framework defect produces a later version/fix branch.
+Record:
 
----
+- DeepSeek usage/cost
+- OpenAI calls
+- Claude calls
+- Claude spend
 
-# Stable-v0.1 Acceptance Criteria
+## Defect classification
 
-The smoke test passes when all **required** scenarios below pass:
+Use:
 
-1. static release invariants are intact
-2. project-init propagates the exact evidence contract
-3. first-spec implementation verifies while fully uncommitted
-4. review can run before implementation commit
-5. committing identical verified state preserves `MATCH`
-6. content changes produce `MISMATCH`
-7. mode/type changes produce `MISMATCH` or fail closed as `UNRECONSTRUCTABLE` when the platform cannot represent them reliably
-8. verification-time implementation mutation produces `BLOCKED`
-9. deterministic failure → fix → fresh verify works
-10. waiver preserves `NOT_DONE` while establishing only `CLEAR_WITH_EXCEPTION`
-11. stale waiver/evidence cannot authorize changed implementation state
-12. malformed/unreconstructable evidence fails closed
-13. evidence paths do not invalidate implementation identity while specs/architecture/code/config do
-14. adversarial reconciliation remains `RECONCILE_ONLY`
-15. blocking pre-review skips senior review and persists `Senior Review: NOT_RUN`
-16. no mandatory Claude runtime call occurs
-
-Optional diagnosis testing may be omitted when creating a realistic intermittent fixture would add disproportionate cost.
+- `FRAMEWORK_DEFECT`
+- `TEST_FIXTURE_DEFECT`
+- `ENVIRONMENT_LIMITATION`
+- `MODEL_VARIANCE`
+- `DOCUMENTATION_DEFECT`
 
 ---
 
-# Release Decision
+# 31. Stable-v0.1 Required Acceptance Criteria
 
-After execution, record one release-validation status:
+Required:
 
-### `SMOKE_PASS`
+1. `/grill` can be used when needed and skipped when not needed
+2. discovery blockers do not force settled questions to be repeated
+3. PRD routes unresolved product decisions correctly
+4. architecture preserves operating-cost requirements
+5. architecture routes product blockers back to PRD
+6. project-init synchronizes repository instructions and evidence contract
+7. spec routes blockers to the correct authority
+8. implementation can proceed on an approved dedicated spec branch
+9. first-spec implementation can remain fully uncommitted
+10. uncommitted implementation verifies successfully
+11. review works before implementation commit
+12. later identical commit preserves `MATCH`
+13. content change produces `MISMATCH`
+14. mode/type change produces `MISMATCH` or valid `UNRECONSTRUCTABLE`
+15. verification-time mutation blocks delivery
+16. `NOT_DONE → /fix → /verify` works
+17. diagnosis path persists evidence when used
+18. waiver preserves `NOT_DONE`
+19. valid waiver establishes only `CLEAR_WITH_EXCEPTION`
+20. stale waiver cannot authorize changed state
+21. malformed evidence fails closed
+22. evidence-path exclusions behave correctly
+23. adversarial reconciliation uses `RECONCILE_ONLY`
+24. pre-review blocker skips senior review
+25. restart from arbitrary middle stages works using repository artifacts alone
+26. upstream changes force correct downstream regeneration
+27. no mandatory Claude runtime invocation occurs
+28. prior chat history is not required to resume the workflow
 
-All required Stable-v0.1 acceptance criteria passed.
+---
 
-### `SMOKE_PASS_WITH_ENVIRONMENT_LIMITATION`
+# 32. Optional Acceptance Criteria
 
-All required workflow semantics passed, but a platform-specific mode/type case could not be represented and correctly failed closed as `UNRECONSTRUCTABLE`.
+Optional when creating the fixture would add disproportionate cost:
 
-### `SMOKE_FAIL`
+- realistic intermittent-failure diagnosis scenario
+- actual paid Claude invocation
+- platform-specific symlink/gitlink mode transition where unsupported locally
+
+Optional scenarios must be marked explicitly and must not silently appear as passes.
+
+---
+
+# 33. Release Validation Outcome
+
+Use one final status.
+
+## SMOKE_PASS
+
+All required acceptance criteria passed.
+
+## SMOKE_PASS_WITH_ENVIRONMENT_LIMITATION
+
+All workflow semantics passed, but a platform-specific mode/type scenario could not be represented and correctly failed closed.
+
+## SMOKE_FAIL
 
 One or more required workflow semantics failed.
 
-Do not move the Stable-v0.1 tag to incorporate fixes discovered during smoke testing.
+If failed:
 
-Instead:
+1. preserve evidence,
+2. do not silently modify the tagged release,
+3. fix on a branch,
+4. run review/verification,
+5. publish a later version such as:
 
-1. preserve the failing release evidence,
-2. fix on a new branch,
-3. review/verify the framework fix,
-4. publish a subsequent version such as `stable_v_0.1.1`.
+```text
+stable_v_0.1.1
+```
 
 ---
 
-## Expected Stable-v0.1 Outcome
+# 34. Quick Operational Continuation Guide
 
-The intended result is a workflow that proves:
+When returning to a project after days/weeks, use this sequence:
 
-> The exact repository state that was deterministically verified is the state being reviewed, regardless of whether that implementation had already been committed, while stale, malformed, changed, or unreconstructable evidence fails closed.
+```text
+1. Inspect persisted artifacts.
+2. Identify latest authoritative upstream state.
+3. Determine whether downstream artifacts remain valid.
+4. Identify latest applicable verification/review/diagnosis evidence.
+5. Inspect branch + working tree.
+6. Choose the earliest incomplete/stale stage.
+7. Run only that stage and required downstream stages.
+```
 
-The smoke test should prove that contract with the minimum practical model spend.
+Examples:
+
+```text
+PRD ready, no architecture
+→ /architect
+
+Architecture ready, project rules missing
+→ /project-init
+
+Everything planned, spec exists
+→ /implement
+
+Code exists, no current evidence
+→ /verify
+
+DONE + CLEAR + MATCH
+→ /review
+
+NOT_DONE + known bug
+→ /fix
+
+NOT_DONE + uncertain root cause
+→ /diagnose
+
+NOT_DONE + explicitly accepted bounded risk
+→ /waive
+
+Review blocker
+→ /fix → /verify → /review
+
+Product requirement changed
+→ /prd → regenerate affected downstream artifacts
+
+Architecture changed
+→ /project-init → /spec → implementation/fix → /verify → /review
+```
+
+---
+
+# 35. Intended Stable-v0.1 Guarantee
+
+The smoke test should demonstrate that the workflow can be entered and resumed from the correct stage based on persisted repository state, without relying on conversational history and without unnecessarily repeating earlier model-expensive stages.
+
+The core guarantee is:
+
+> The workflow preserves authority boundaries, reuses valid prior artifacts, invalidates downstream work when upstream authority changes, and ensures that the exact repository state that was deterministically verified is the state being reviewed—even when implementation was never committed before verification.
