@@ -50,7 +50,7 @@ A verification report is fresh for review only when all of these are true:
 - the current canonical implementation-state manifest can be reconstructed under Contract v1
 - reconstruction outcome is `MATCH`
 
-Reconstruct the current manifest using the exact Contract v1 rules. Compare the reconstructed canonical manifest byte-for-byte with the persisted canonical manifest.
+Reconstruct the current manifest using the exact Contract v1 rules, including effective Git mode/type for every identity-bearing path. Compare the reconstructed canonical manifest byte-for-byte with the persisted canonical manifest.
 
 The persisted fingerprint is a compact checksum/identifier and should be checked for internal consistency when practical, but fingerprint equality never substitutes for canonical-manifest equality.
 
