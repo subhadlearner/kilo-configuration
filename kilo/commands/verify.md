@@ -23,7 +23,7 @@ Do not modify application code or tests merely to obtain a passing result.
 - Every non-trivial verification run creates a new immutable/history-preserving report under `docs/verification/`.
 - Never overwrite an earlier verification report.
 - Human risk acceptance is handled separately by `/waive`.
-- A reviewable verification result must be bound to an exact implementation-state fingerprint. The implementation may be uncommitted; verification success must authorize review only of the same effective repository contents that were actually checked.
+- A reviewable verification result must satisfy `kilo/contracts/implementation-state-evidence-v1.md`. The canonical implementation-state manifest is authoritative; the fingerprint is its compact checksum/identifier. The implementation may be uncommitted.
 
 ## Stage 1 — Determine Verification Scope
 
@@ -38,6 +38,8 @@ Use, in priority order:
 5. the approved `security-verification` skill when security verification is applicable
 
 Determine all applicable required checks.
+
+Read and apply `kilo/contracts/implementation-state-evidence-v1.md` as the normative implementation-state freshness contract.
 
 Capture the repository state before executing checks.
 
@@ -54,22 +56,31 @@ Build it from the union of:
 - tracked paths whose current contents differ from the verification base HEAD
 - untracked, non-ignored paths
 
-For every path in that union, excluding workflow evidence paths, record:
+Construct the **canonical implementation-state manifest** exactly as required by Contract v1:
 
-- repository-relative path
-- current Git blob/content hash using read-only `git hash-object --no-filters`, or `DELETED` when the path does not exist
+- repository-relative path using `/`
+- TAB separator
+- current Git blob/content hash from read-only `git hash-object --no-filters`, or literal `DELETED`
+- LF record terminator
+- UTF-8, no BOM
+- entries sorted by UTF-8 path bytes
+- no duplicates or blank records
 
-Sort entries by repository-relative path before computing/storing the fingerprint.
-
-The **implementation-state fingerprint** is the deterministic identity of that normalized manifest. The full manifest must also be persisted so `/review` can reconstruct and compare it without relying on chat history.
-
-Workflow evidence paths are excluded from the implementation-state manifest:
+Exclude only the Contract v1 workflow evidence set:
 
 - `docs/verification/**`
 - `docs/reviews/**`
 - `docs/diagnostics/**`
 
-This design intentionally supports normal review-before-commit development. A dirty working tree is not itself a blocker when its effective contents are captured by the fingerprint.
+Persist the full canonical manifest. Compute/store the Contract v1 fingerprint as a Git blob object ID of those exact canonical bytes. Use `git hash-object --stdin` when the execution environment can supply the manifest bytes directly. An equivalent evidence-sidecar file under `docs/verification/**` may be used with `git hash-object --no-filters`; the sidecar bytes must exactly equal the persisted canonical manifest.
+
+Exact canonical-manifest equality is authoritative. A matching fingerprint alone never proves freshness.
+
+If canonical representation or reconstruction is not reliable, including an identity-bearing path containing TAB, CR, or LF, treat the state as `UNRECONSTRUCTABLE`.
+
+Git-ignored files are intentionally outside implementation-state identity. Record materially relevant ignored/local/environment assumptions separately in the verification report.
+
+This design intentionally supports normal review-before-commit development. A dirty working tree is not itself a blocker when its effective contents are captured by the canonical manifest.
 
 Project-level `AGENTS.md` is the primary source for repository verification commands.
 
@@ -232,13 +243,17 @@ Do not infer that an acceptance criterion passes merely because unrelated tests 
 
 ## Stage 9 — Recheck Implementation State and Determine Verification Result
 
-After all configured checks finish, reconstruct the implementation-state manifest again using the **same verification base HEAD SHA** and the same evidence-path exclusions.
+After all configured checks finish, reconstruct the canonical implementation-state manifest again using the **same verification base HEAD SHA** and Contract v1 rules.
 
-The verification evidence is content-stable only when:
+Classify reconstruction as exactly one of:
 
-- the branch is unchanged
-- the normalized post-check manifest exactly matches the normalized pre-check manifest
-- therefore the implementation-state fingerprint is unchanged
+- `MATCH` — reconstruction succeeds and the post-check canonical manifest is byte-for-byte identical to the pre-check canonical manifest
+- `MISMATCH` — reconstruction succeeds but the canonical manifests differ
+- `UNRECONSTRUCTABLE` — required state/evidence cannot be represented or reconstructed reliably
+
+The verification evidence is content-stable only when the branch is unchanged and reconstruction is `MATCH`.
+
+`MISMATCH` or `UNRECONSTRUCTABLE` prevents a reusable clear gate and requires a fresh `/verify`.
 
 A verification command that modifies source, tests, specifications, configuration, dependency manifests/lockfiles, architecture/ADRs, project instructions, or any other non-evidence path changes the fingerprint and prevents a reusable clear gate until verification is rerun against that new state.
 
@@ -258,11 +273,11 @@ Return `NOT_DONE` when any required condition is not satisfied.
 
 For this verification run, derive:
 
-- `Delivery Gate: CLEAR` when verification is `DONE` and the implementation-state fingerprint remained unchanged throughout verification
+- `Delivery Gate: CLEAR` when verification is `DONE` and implementation-state reconstruction is `MATCH`
 - `Delivery Gate: BLOCKED` when verification is `NOT_DONE`
-- `Delivery Gate: BLOCKED` when checks are `DONE` but the fingerprint changed while verification was running
+- `Delivery Gate: BLOCKED` when checks are `DONE` but reconstruction is `MISMATCH` or `UNRECONSTRUCTABLE`
 
-When checks pass but the fingerprint changes during verification, preserve the factual result:
+When checks pass but implementation-state reconstruction is `MISMATCH` or `UNRECONSTRUCTABLE`, preserve the factual result:
 
 `Verification Result: DONE`
 
@@ -303,10 +318,19 @@ The report must contain:
 - specification/change
 - branch
 - verification base HEAD SHA
+- evidence contract version: `implementation-state-evidence-v1`
 - implementation-state fingerprint
-- normalized implementation-state manifest: path + Git blob/content hash or `DELETED`
-- whether the fingerprint remained unchanged throughout verification
+- canonical implementation-state manifest serialized exactly per Contract v1
+- pre-check/post-check freshness outcome: `MATCH`, `MISMATCH`, or `UNRECONSTRUCTABLE`
 - date/time when available from the environment
+
+### Verification Environment
+
+Record only materially relevant execution-environment facts/assumptions, such as runtime/SDK version, integration profile, external emulator/service version, or required externally supplied configuration.
+
+Do not dump secrets or the full environment.
+
+Repository-content freshness does not prove execution-environment identity.
 
 ### Verification Scope
 
