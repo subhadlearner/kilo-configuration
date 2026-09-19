@@ -41,19 +41,23 @@ Read only the minimum context required to repair the blocker.
 
 Use, in priority order:
 
-1. latest verification, review, or diagnosis result
-2. requested specification when one governs the change
-3. established behavior/contract when repairing an existing defect without a dedicated spec
-4. relevant project-level `AGENTS.md`
-5. relevant source files
-6. relevant tests
-7. relevant architecture or ADRs only when needed
+1. latest persisted review report under `docs/reviews/` when repairing review findings
+2. latest persisted verification report under `docs/verification/` when repairing verification failures
+3. latest diagnosis artifact under `docs/diagnostics/` when repairing diagnosed failures
+4. requested specification when one governs the change
+5. established behavior/contract when repairing an existing defect without a dedicated spec
+6. relevant project-level `AGENTS.md`
+7. relevant source files
+8. relevant tests
+9. relevant architecture or ADRs only when needed
 
 Do not scan unrelated parts of the repository.
 
 ## Stage 2 — Confirm Repair Scope
 
-Extract the concrete blocking findings.
+Extract the concrete blocking findings from the persisted evidence artifact.
+
+Do not rely on chat memory when a persisted review, verification, or diagnosis artifact exists.
 
 For each blocker determine:
 
