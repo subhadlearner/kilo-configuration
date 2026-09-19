@@ -384,6 +384,7 @@ Approved fixture metadata lives in:
 ```text
 kilo/smoke/fixtures.json
 kilo/smoke/profiles.json
+kilo/smoke/failure-recipes.json
 ```
 
 Current fixtures:
@@ -393,6 +394,8 @@ Current fixtures:
 | `fast-micro-library` | FAST | Cheapest lifecycle/evidence/fix smoke fixture |
 | `full-minimal-api` | FULL | Default complete workflow fixture |
 | `full-local-persistence-api` | FULL | Optional local-persistence-oriented validation |
+
+Failure-injection behavior is separately defined in `kilo/smoke/failure-recipes.json`, so the executor does not infer how to manufacture a failure from prose.
 
 Fixture choice controls the disposable product shape and default test budget. It does **not** choose the implementation technology; `/architect` retains that authority.
 
