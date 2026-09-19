@@ -150,6 +150,16 @@ Waivers must be scoped, human-authorized, time-bounded, and tied to the exact ve
 
 Review occurs only when the delivery gate is `CLEAR` or `CLEAR_WITH_EXCEPTION`.
 
+Every non-trivial `/review` run must create a new history-preserving artifact under `docs/reviews/`.
+
+Pre-review findings must be persisted even when they block senior review. A blocked pre-review report records `CHANGES_REQUIRED` and `Senior Review: NOT_RUN`.
+
+When senior review runs, the same review-run artifact records both the complete pre-review evidence and the senior-review evidence.
+
+Completed prior review reports must not be overwritten. Subsequent review runs create new numbered artifacts.
+
+`/fix` should consume the latest applicable persisted review report rather than relying on chat history.
+
 For `CLEAR_WITH_EXCEPTION`, reviewers must receive the original failed verification evidence plus the active waiver and may still reject the change if the accepted risk is unsafe or out of policy.
 
 Review sequence:
