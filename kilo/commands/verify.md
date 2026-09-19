@@ -23,6 +23,7 @@ Do not modify application code or tests merely to obtain a passing result.
 - Every non-trivial verification run creates a new immutable/history-preserving report under `docs/verification/`.
 - Never overwrite an earlier verification report.
 - Human risk acceptance is handled separately by `/waive`.
+- A reviewable verification result must be bound to a stable implementation revision. Verification success alone must not authorize review of code that changed after the checks ran.
 
 ## Stage 1 — Determine Verification Scope
 
@@ -37,6 +38,20 @@ Use, in priority order:
 5. the approved `security-verification` skill when security verification is applicable
 
 Determine all applicable required checks.
+
+Capture repository identity before executing checks:
+
+- current branch
+- current HEAD commit SHA
+- whether the working tree contains uncommitted or untracked changes outside workflow evidence paths
+
+Workflow evidence paths are:
+
+- `docs/verification/**`
+- `docs/reviews/**`
+- `docs/diagnostics/**`
+
+Changes to source, tests, project configuration, specifications, architecture/ADRs, project instructions, dependency manifests/lockfiles, or other non-evidence paths mean the implementation revision is not stable for a reusable review gate.
 
 Project-level `AGENTS.md` is the primary source for repository verification commands.
 
@@ -215,8 +230,21 @@ Return `NOT_DONE` when any required condition is not satisfied.
 
 For this verification run, derive:
 
-- `Delivery Gate: CLEAR` when verification is `DONE`
+- `Delivery Gate: CLEAR` only when verification is `DONE` **and** the verified implementation revision is stable: the current HEAD SHA is recorded and there were no uncommitted/untracked non-evidence changes when verification began
 - `Delivery Gate: BLOCKED` when verification is `NOT_DONE`
+- `Delivery Gate: BLOCKED` when checks are `DONE` but the implementation revision is not stable enough to prove freshness for later review
+
+When checks pass on an unstable working tree, preserve the factual result:
+
+`Verification Result: DONE`
+
+but record:
+
+`Delivery Gate: BLOCKED`
+
+with the blocker:
+
+`Commit the intended implementation/spec/configuration changes, then rerun /verify so the evidence is tied to a stable revision.`
 
 Do not produce `CLEAR_WITH_EXCEPTION` inside `/verify`.
 
@@ -244,7 +272,9 @@ The report must contain:
 - verification ID
 - specification/change
 - branch
-- commit SHA when available
+- verified implementation HEAD commit SHA
+- repository state at verification start: `STABLE` or `UNSTABLE`
+- non-evidence changed paths, if any
 - date/time when available from the environment
 
 ### Verification Scope
@@ -312,9 +342,15 @@ or:
 
 ### Next Action
 
-When `DONE`:
+When `DONE` with `Delivery Gate: CLEAR`:
 
 `/review`
+
+When `DONE` with `Delivery Gate: BLOCKED` because the implementation revision was unstable:
+
+commit the intended non-evidence changes, then rerun:
+
+`/verify`
 
 When `NOT_DONE`, select the truthful next path:
 
