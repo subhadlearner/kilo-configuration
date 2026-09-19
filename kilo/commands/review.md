@@ -18,9 +18,11 @@ Do not perform the code review yourself.
 - Persist reviewer findings faithfully; do not rewrite blocking findings into softer language.
 - The review artifact is the authoritative persisted handoff for `/fix`.
 - Verification evidence and waivers remain separate artifacts; reference them rather than duplicating or altering their truth.
-- Never review implementation state whose effective non-evidence contents differ from the implementation-state fingerprint captured by the verification report.
+- Never review implementation state unless Contract v1 reconstruction is `MATCH`. Canonical-manifest equality is authoritative; fingerprint equality alone is insufficient.
 
 ## Stage 1 — Determine Review Context
+
+Read and apply `kilo/contracts/implementation-state-evidence-v1.md` as the normative freshness contract.
 
 Identify:
 
@@ -43,16 +45,14 @@ A verification report is fresh for review only when all of these are true:
 
 - it belongs to the same specification/change being reviewed
 - it was produced for the current branch
-- its persisted normalized implementation-state manifest can be reconstructed from the recorded verification base HEAD
-- the current reconstructed implementation-state fingerprint exactly matches the persisted fingerprint
+- it contains every required Contract v1 evidence field
+- the verification base HEAD is available
+- the current canonical implementation-state manifest can be reconstructed under Contract v1
+- reconstruction outcome is `MATCH`
 
-Reconstruct the current manifest using the same rules as `/verify`:
+Reconstruct the current manifest using the exact Contract v1 rules. Compare the reconstructed canonical manifest byte-for-byte with the persisted canonical manifest.
 
-- compare current effective repository contents to the recorded verification base HEAD
-- include tracked differences plus untracked, non-ignored paths
-- exclude only workflow evidence paths
-- normalize each included path to path + current Git blob/content hash, or `DELETED`
-- sort deterministically before comparing
+The persisted fingerprint is a compact checksum/identifier and should be checked for internal consistency when practical, but fingerprint equality never substitutes for canonical-manifest equality.
 
 The current HEAD SHA may differ from the verification-time HEAD when the verified working-tree contents were committed after verification. A HEAD change alone does **not** make evidence stale if the reconstructed effective-content fingerprint is identical.
 
@@ -71,11 +71,13 @@ If no applicable persisted verification report exists:
 - STOP the review pipeline
 - request `/verify` before continuing
 
-If the applicable verification report is stale because branch, scope, or implementation-state fingerprint differs:
+Classify freshness as `MATCH`, `MISMATCH`, or `UNRECONSTRUCTABLE`.
+
+If freshness is `MISMATCH` or `UNRECONSTRUCTABLE` because branch/scope/content differs, the base HEAD is unavailable, required evidence is missing/malformed, or reconstruction cannot be proven reliably:
 
 - STOP the review pipeline
 - do not invoke `pre-reviewer`
-- report that verification evidence is stale
+- report the exact freshness outcome and reason
 - require the current implementation state to run `/verify` again
 
 If verification is `DONE` with `Delivery Gate: CLEAR`, proceed normally.
@@ -83,7 +85,8 @@ If verification is `DONE` with `Delivery Gate: CLEAR`, proceed normally.
 If verification is `NOT_DONE`, proceed only when there is a valid active waiver that:
 
 - references the exact verification report
-- references the exact implementation-state fingerprint
+- references the exact implementation-state fingerprint and immutable verification report whose canonical manifest is authoritative
+- current Contract v1 freshness outcome is `MATCH`
 - covers every failure being accepted
 - is unexpired
 - is allowed by project policy
@@ -206,7 +209,9 @@ The report must contain:
 - verified implementation-state fingerprint
 - factual verification result
 - effective delivery gate
-- freshness check result
+- evidence contract version
+- freshness result: `MATCH`, `MISMATCH`, or `UNRECONSTRUCTABLE`
+- canonical-manifest equality result
 - active waiver path/ID when applicable
 
 ### Pre-Review

@@ -6,6 +6,8 @@ model: openai/gpt-5.6-luna
 
 # Verification Waiver Workflow
 
+Apply `kilo/contracts/implementation-state-evidence-v1.md` whenever establishing waiver freshness.
+
 Create a governed exception for a specific failed verification result.
 
 This command never changes verification evidence.
@@ -19,7 +21,7 @@ It records a human decision to accept a documented residual risk temporarily.
 - Never edit the verification report to make it green.
 - Never delete, skip, quarantine, weaken, or suppress the failed check merely because a waiver exists.
 - The failed check should continue to execute in future verification runs.
-- A waiver is scoped to an exact verification report, implementation-state fingerprint, failure set, and expiry.
+- A waiver is scoped to an exact verification report, its authoritative canonical implementation-state manifest, implementation-state fingerprint, failure set, and expiry.
 - A waiver never authorizes production deployment by itself.
 - Human production approval remains separate.
 - The agent must not invent the owner's justification or risk acceptance.
@@ -107,10 +109,14 @@ The waiver must identify:
 - expiry
 - remediation reference
 
+Before a waiver can be created or reused, reconstruct current implementation state under Contract v1. Freshness must be `MATCH`. Canonical-manifest equality is authoritative; fingerprint equality alone is insufficient.
+
+If required evidence is missing/malformed, the base HEAD is unavailable, or reconstruction cannot be proven reliably, freshness is `UNRECONSTRUCTABLE` and the waiver must fail closed.
+
 A waiver is stale and invalid when:
 
 - the current branch differs from the referenced verification branch
-- the current effective non-evidence repository contents no longer reconstruct to the referenced implementation-state fingerprint
+- Contract v1 freshness is `MISMATCH` or `UNRECONSTRUCTABLE`
 - the referenced verification report is not the applicable report for the change under review
 - the failed check set changed materially
 - the waiver expired
@@ -141,7 +147,9 @@ Required content:
 - specification/change
 - branch
 - verification base HEAD SHA
+- evidence contract version: `implementation-state-evidence-v1`
 - implementation-state fingerprint
+- authoritative canonical manifest reference: the immutable verification report
 
 ### Failed Check(s)
 
@@ -177,7 +185,7 @@ Record a bounded expiry.
 
 ### Scope
 
-State that the waiver applies only to the referenced verification report/implementation-state fingerprint/failure set.
+State that the waiver applies only to the referenced verification report/canonical implementation-state manifest/implementation-state fingerprint/failure set.
 
 ### Verification Truth
 

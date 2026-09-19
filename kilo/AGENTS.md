@@ -136,7 +136,7 @@ Never:
 
 Every non-trivial verification run must create a new history-preserving artifact under `docs/verification/`.
 
-A reusable review gate must be tied to an exact implementation-state fingerprint, not to a requirement that code already be committed. `/verify` records a base HEAD plus a deterministic manifest of all non-evidence tracked differences and untracked files, then rechecks the same fingerprint after verification. Normal uncommitted implementation work may therefore reach `CLEAR` when its fingerprint remains unchanged. If verification commands change non-evidence contents, the delivery gate remains `BLOCKED` until `/verify` is rerun against the new state.
+Reusable verification/review evidence must follow `kilo/contracts/implementation-state-evidence-v1.md`. The canonical implementation-state manifest is the authoritative repository-content identity; the fingerprint is only its compact checksum/identifier. Normal uncommitted implementation work may reach `CLEAR` only when pre/post verification canonical manifests are an exact `MATCH`. `MISMATCH` or `UNRECONSTRUCTABLE` fails closed and requires a fresh `/verify`.
 
 A specification is `DONE` only when all required applicable deterministic checks and acceptance criteria have verifiable evidence.
 
@@ -146,11 +146,11 @@ When the human owner deliberately accepts a documented residual risk, use `/waiv
 
 A valid waiver may establish `Delivery Gate: CLEAR_WITH_EXCEPTION` for review, but it never changes the original verification result or makes the failed check pass.
 
-Waivers must be scoped, human-authorized, time-bounded, and tied to the exact verification evidence/implementation-state fingerprint/failure set. Waived checks continue to execute.
+Waivers must be scoped, human-authorized, time-bounded, and tied to the exact verification report, its canonical implementation-state manifest/fingerprint, and failure set. Waived checks continue to execute.
 
 ## Review
 
-Review occurs only when the delivery gate is `CLEAR` or `CLEAR_WITH_EXCEPTION` **and** the current effective non-evidence repository contents reconstruct to the exact implementation-state fingerprint verified for the current specification/change and branch. A later commit of those same contents does not by itself invalidate verification.
+Review occurs only when the delivery gate is `CLEAR` or `CLEAR_WITH_EXCEPTION` **and** Contract v1 freshness is `MATCH` for the current specification/change and branch. A later commit of those same contents does not by itself invalidate verification. Fingerprint equality alone is insufficient; exact canonical-manifest equality is authoritative.
 
 Every non-trivial `/review` run must create a new history-preserving artifact under `docs/reviews/`.
 
