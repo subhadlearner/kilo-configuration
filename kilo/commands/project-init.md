@@ -204,12 +204,25 @@ Ensure the repository contains the standard workflow artifact directories:
 - `docs/verification/`
 - `docs/verification/waivers/`
 - `docs/reviews/`
+- `docs/workflow/`
 
 Create missing directories using a repository-appropriate placeholder such as `.gitkeep` when an empty directory must be represented in Git.
 
+Also ensure the repository contains:
+
+`docs/workflow/IMPLEMENTATION-STATE-EVIDENCE-V1.md`
+
+Populate it from the global canonical contract:
+
+`kilo/contracts/implementation-state-evidence-v1.md`
+
+Copy the contract verbatim. Do not summarize, reinterpret, or maintain an independently rewritten variant.
+
+If the global canonical contract is unavailable or the project copy cannot be synchronized exactly, return `PROJECT_INIT_BLOCKED` rather than leaving a dangling Stable-v1 reference.
+
 Do not delete existing artifacts.
 
-These directories hold workflow evidence and design artifacts; they do not authorize implementation decisions.
+These directories and the contract hold workflow evidence/design rules; they do not authorize implementation decisions.
 
 ## Stage 6 — Configure Project Rules
 
@@ -377,7 +390,8 @@ Before declaring project initialization complete, verify:
 - `AGENTS.md` contains valid build/test commands where available
 - `AGENTS.md` contains executable approved security commands when architecture requires them
 - required security verification capabilities are not silently omitted
-- standard workflow artifact directories exist, including `docs/verification/waivers/` and `docs/reviews/`
+- standard workflow artifact directories exist, including `docs/verification/waivers/`, `docs/reviews/`, and `docs/workflow/`
+- `docs/workflow/IMPLEMENTATION-STATE-EVIDENCE-V1.md` exists and is synchronized verbatim with the global canonical contract
 - `README.md` accurately describes the project
 - README does not claim unimplemented functionality
 - project rules are relevant and non-duplicative
