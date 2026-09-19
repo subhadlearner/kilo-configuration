@@ -59,12 +59,17 @@ Build it from the union of:
 Construct the **canonical implementation-state manifest** exactly as required by Contract v1:
 
 - repository-relative path using `/`
-- TAB separator
+- effective Git mode/type
 - current Git blob/content hash from read-only `git hash-object --no-filters`, or literal `DELETED`
+- exactly two TAB separators per record
 - LF record terminator
 - UTF-8, no BOM
 - entries sorted by UTF-8 path bytes
 - no duplicates or blank records
+
+For tracked paths, use read-only Git evidence such as `git ls-files --stage` and `git diff --raw` to capture mode/type, including unstaged mode-only changes.
+
+For untracked, non-ignored paths, derive the Git-compatible mode/type that Git would record. If executable/symlink/gitlink state cannot be determined reliably, classify reconstruction as `UNRECONSTRUCTABLE`; do not guess.
 
 Exclude only the Contract v1 workflow evidence set:
 
@@ -320,7 +325,7 @@ The report must contain:
 - verification base HEAD SHA
 - evidence contract version: `implementation-state-evidence-v1`
 - implementation-state fingerprint
-- canonical implementation-state manifest serialized exactly per Contract v1
+- canonical implementation-state manifest serialized exactly per Contract v1, including Git mode/type for every identity-bearing path
 - pre-check/post-check freshness outcome: `MATCH`, `MISMATCH`, or `UNRECONSTRUCTABLE`
 - date/time when available from the environment
 
