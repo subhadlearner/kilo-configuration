@@ -18,7 +18,7 @@ Do not perform the code review yourself.
 - Persist reviewer findings faithfully; do not rewrite blocking findings into softer language.
 - The review artifact is the authoritative persisted handoff for `/fix`.
 - Verification evidence and waivers remain separate artifacts; reference them rather than duplicating or altering their truth.
-- Never review implementation state that is newer or materially different from the implementation revision captured by the verification report.
+- Never review implementation state whose effective non-evidence contents differ from the implementation-state fingerprint captured by the verification report.
 
 ## Stage 1 — Determine Review Context
 
@@ -28,10 +28,10 @@ Identify:
 - the relevant specification
 - relevant architecture and ADRs
 - the latest **applicable** persisted verification report under `docs/verification/` for this specification/change and branch
-- any waiver under `docs/verification/waivers/` that explicitly references that exact verification report and verified implementation commit
+- any waiver under `docs/verification/waivers/` that explicitly references that exact verification report and implementation-state fingerprint
 - current branch
-- current HEAD commit SHA
-- current non-evidence working-tree changes
+- current HEAD commit SHA as provenance
+- the current implementation-state manifest reconstructed relative to the verification report's base HEAD
 
 Do not load unrelated project documentation.
 
@@ -43,24 +43,35 @@ A verification report is fresh for review only when all of these are true:
 
 - it belongs to the same specification/change being reviewed
 - it was produced for the current branch
-- its recorded verified implementation HEAD SHA equals the current HEAD SHA
-- it records repository state `STABLE`
-- the current working tree has no non-evidence changes
+- its persisted normalized implementation-state manifest can be reconstructed from the recorded verification base HEAD
+- the current reconstructed implementation-state fingerprint exactly matches the persisted fingerprint
 
-The only uncommitted paths that may be ignored for this freshness check are workflow evidence paths:
+Reconstruct the current manifest using the same rules as `/verify`:
+
+- compare current effective repository contents to the recorded verification base HEAD
+- include tracked differences plus untracked, non-ignored paths
+- exclude only workflow evidence paths
+- normalize each included path to path + current Git blob/content hash, or `DELETED`
+- sort deterministically before comparing
+
+The current HEAD SHA may differ from the verification-time HEAD when the verified working-tree contents were committed after verification. A HEAD change alone does **not** make evidence stale if the reconstructed effective-content fingerprint is identical.
+
+Conversely, the same HEAD SHA does **not** make evidence fresh when working-tree contents changed.
+
+The only paths excluded from this content-freshness comparison are workflow evidence paths:
 
 - `docs/verification/**`
 - `docs/reviews/**`
 - `docs/diagnostics/**`
 
-Do not treat a globally newest report for another specification, branch, or revision as applicable.
+Do not treat a globally newest report for another specification, branch, or implementation fingerprint as applicable.
 
 If no applicable persisted verification report exists:
 
 - STOP the review pipeline
 - request `/verify` before continuing
 
-If the applicable verification report is stale because HEAD, branch, scope, or non-evidence working-tree state changed:
+If the applicable verification report is stale because branch, scope, or implementation-state fingerprint differs:
 
 - STOP the review pipeline
 - do not invoke `pre-reviewer`
@@ -72,7 +83,7 @@ If verification is `DONE` with `Delivery Gate: CLEAR`, proceed normally.
 If verification is `NOT_DONE`, proceed only when there is a valid active waiver that:
 
 - references the exact verification report
-- references the exact verified implementation commit
+- references the exact implementation-state fingerprint
 - covers every failure being accepted
 - is unexpired
 - is allowed by project policy
@@ -184,13 +195,15 @@ The report must contain:
 - review ID
 - specification/change
 - branch
-- reviewed implementation commit SHA
+- current HEAD SHA as provenance
+- reviewed implementation-state fingerprint
 - date/time when available from the environment
 
 ### Verification Input
 
 - persisted verification report path/ID
-- verified implementation commit SHA
+- verification base HEAD SHA
+- verified implementation-state fingerprint
 - factual verification result
 - effective delivery gate
 - freshness check result
