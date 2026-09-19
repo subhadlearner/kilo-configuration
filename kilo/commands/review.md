@@ -17,25 +17,45 @@ Identify:
 - the intended scope of the change
 - the relevant specification
 - relevant architecture and ADRs
-- available verification/test results
+- the latest persisted verification report under `docs/verification/`
+- any waiver under `docs/verification/waivers/` that explicitly references that exact verification report and commit
 
 Do not load unrelated project documentation.
 
 ### Verification Gate
 
-For implementation changes, review the latest verification result before invoking any reviewer.
+For implementation changes, review the latest persisted verification report before invoking any reviewer.
 
-If required verification has failed:
-
-- STOP the review pipeline
-- do not invoke `pre-reviewer`
-- report the failed verification
-- require the implementation to return to `/fix`
-
-If no verification result exists for an implementation change:
+If no persisted verification report exists:
 
 - STOP the review pipeline
 - request `/verify` before continuing
+
+If verification is `DONE` with `Delivery Gate: CLEAR`, proceed normally.
+
+If verification is `NOT_DONE`, proceed only when there is a valid active waiver that:
+
+- references the exact verification report
+- references the exact commit when available
+- covers every failure being accepted
+- is unexpired
+- is allowed by project policy
+- contains explicit human authorization
+
+When such a waiver exists, treat the effective delivery gate as:
+
+`CLEAR_WITH_EXCEPTION`
+
+Pass both the original `NOT_DONE` verification report and the waiver verbatim to reviewers.
+
+If any failed blocker is unwaived, the waiver is stale/expired, or policy prohibits the waiver:
+
+- STOP the review pipeline
+- do not invoke reviewers
+- report `Delivery Gate: BLOCKED`
+- route to `/fix`, `/diagnose`, or a fresh explicit `/waive` decision as appropriate
+
+Never reinterpret a waived failure as a passing check.
 
 Documentation-only, planning-only, or other non-executable changes may proceed without executable verification when such verification is not applicable.
 
@@ -47,7 +67,9 @@ Provide the pre-reviewer with:
 
 - the requested specification or change scope
 - relevant architecture/ADR references where available
-- available verification results
+- the persisted verification report
+- any active waiver, verbatim
+- effective delivery gate: `CLEAR` or `CLEAR_WITH_EXCEPTION`
 
 The pre-reviewer must independently inspect the Git changes.
 
@@ -84,7 +106,9 @@ Provide the senior reviewer with:
 - the intended change scope
 - the relevant specification
 - relevant architecture/ADR references
-- available verification/test results
+- the persisted verification report
+- any active waiver, verbatim
+- effective delivery gate
 - the complete pre-review report, verbatim and without summarization
 
 Do not rewrite, summarize, reinterpret, or omit findings from the pre-review before passing them to `code-reviewer`.
@@ -142,6 +166,8 @@ Do not invoke the senior reviewer solely to confirm obvious blocking issues alre
 Do not treat the pre-review as final authority.
 
 Do not treat the senior review as a substitute for deterministic verification.
+
+Do not treat a waiver as proof that a defect is harmless. Reviewers may still return blocking findings when the waiver is unsafe, stale, misclassified, out of policy, or contradicted by the evidence.
 
 Do not suppress, weaken, or reinterpret blocking findings to obtain an approval.
 
