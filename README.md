@@ -281,7 +281,7 @@ After a stable tag, framework changes should be treated as deliberate versioned 
 Release validation is documented in:
 
 ```text
-docs/STABLE-V0.1-SMOKE-TEST-PLAN.md
+kilo/smoke/STABLE-V0.1-SMOKE-TEST-PLAN.md
 ```
 
 The runbook can be followed end-to-end from `/grill` or resumed from any valid workflow stage based on persisted repository artifacts. It does not require prior conversational history.
@@ -427,4 +427,4 @@ Required production gates must never be weakened just to reduce token consumptio
 
 Stable-v0.1 focuses on making the workflow deterministic, evidence-driven, production-oriented, and practical to operate without unnecessary frontier-model or infrastructure spend.
 
-The next validation step for `stable_v_0.1.0` is the `FULL_SMOKE` run defined in `docs/STABLE-V0.1-SMOKE-TEST-PLAN.md`.
+The next validation step for `stable_v_0.1.0` is the `FULL_SMOKE` run defined in `kilo/smoke/STABLE-V0.1-SMOKE-TEST-PLAN.md`.
