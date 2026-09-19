@@ -266,16 +266,121 @@ The project copy must match the global canonical contract exactly.
 
 Stable framework releases are tagged in Git.
 
-The first frozen release is intended to be:
+The first frozen release is:
 
 ```text
-stable-v-0.1.0
+stable_v_0.1.0
 ```
 
 After a stable tag, framework changes should be treated as deliberate versioned changes rather than incidental edits.
+
+## Smoke testing
+
+Release validation is documented in:
+
+```text
+docs/STABLE-V0.1-SMOKE-TEST-PLAN.md
+```
+
+The runbook can be followed end-to-end from `/grill` or resumed from any valid workflow stage based on persisted repository artifacts. It does not require prior conversational history.
+
+Two smoke-test depths are defined.
+
+### FAST_SMOKE
+
+Use `FAST_SMOKE` after low-risk framework changes such as:
+
+- documentation-only updates
+- comments or examples
+- non-behavioral configuration cleanup
+- changes that do not alter lifecycle routing, verification freshness, review gates, waiver semantics, diagnosis/fix routing, adversarial reconciliation, or model orchestration
+
+Typical FAST_SMOKE coverage includes:
+
+- static release/configuration checks
+- project-init evidence-contract propagation
+- first-spec uncommitted verification
+- review-before-commit
+- identical commit remaining fresh
+- stale-evidence rejection after content mutation
+- one `/fix → /verify` loop
+- one fail-closed evidence case
+- static model-routing checks
+
+FAST_SMOKE normally avoids unnecessary diagnosis, waiver, paid Claude, repeated senior review, integration/E2E suites, and expensive environment setup unless the changed area specifically requires them.
+
+### FULL_SMOKE
+
+Use `FULL_SMOKE`:
+
+- before a milestone/stable release
+- after lifecycle-routing changes
+- after verification/evidence-contract changes
+- after review-gate changes
+- after waiver changes
+- after `/fix` or `/diagnose` routing changes
+- after adversarial/reconciliation changes
+- after material model-orchestration changes
+
+FULL_SMOKE exercises the complete restartable workflow, including:
+
+```text
+/grill
+→ /prd
+→ /architect
+→ /project-init
+→ /spec
+→ /implement
+→ /verify
+→ /review
+```
+
+plus the recovery paths:
+
+```text
+/verify → NOT_DONE → /fix → /verify
+
+/verify → NOT_DONE
+        → /diagnose → /fix → /verify
+
+/verify → NOT_DONE
+        → /waive → CLEAR_WITH_EXCEPTION → /review
+
+/review → CHANGES_REQUIRED or REQUEST CHANGES
+        → /fix → /verify → /review
+```
+
+For `stable_v_0.1.0`, use:
+
+```text
+FULL_SMOKE
+```
+
+because this release establishes the baseline framework behavior.
+
+### Smoke-test cost discipline
+
+Smoke testing should prove workflow mechanics with the smallest practical fixture.
+
+Prefer:
+
+- one tiny reusable smoke project/feature
+- one or two focused unit tests
+- static checks when runtime execution adds no additional evidence
+- reuse of valid persisted PRD/architecture/spec/evidence
+- Git checkpoints instead of asking models to reconstruct prior states
+- zero Claude runtime calls by default
+
+Do not add integration, E2E, cloud, database, browser, load, or similar test infrastructure merely to make the smoke application look production-sized.
+
+The rule is:
+
+> simplify the smoke fixture, not the production workflow contract.
+
+Required production gates must never be weakened just to reduce token consumption.
 
 ## Status
 
 Stable-v0.1 focuses on making the workflow deterministic, evidence-driven, production-oriented, and practical to operate without unnecessary frontier-model or infrastructure spend.
 
-The next validation step after freezing the release is a controlled smoke test of the lifecycle and evidence state transitions.
+The next validation step for `stable_v_0.1.0` is the `FULL_SMOKE` run defined in `docs/STABLE-V0.1-SMOKE-TEST-PLAN.md`.
