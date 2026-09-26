@@ -146,6 +146,7 @@ def run_command(argv: list[str], *, env: dict[str, str], timeout: int) -> subpro
         env=env,
         input="",  # Prevent a detached Kilo Bash process from hanging on stdin.
         text=True,
+        encoding="utf-8",  # Claude JSON is UTF-8; Windows locale decoding mangles citations.
         capture_output=True,
         timeout=timeout,
         check=False,

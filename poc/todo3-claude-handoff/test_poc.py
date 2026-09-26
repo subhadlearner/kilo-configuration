@@ -24,7 +24,7 @@ def fake_success() -> subprocess.CompletedProcess[str]:
                 "id": "F-1",
                 "severity": "HIGH",
                 "claim": "A timeout skips the required denial audit",
-                "evidence_refs": ["contract.md:AC-1", "artifact.md:step 3"],
+                "evidence_refs": ["contract.md:AC-1 — invariant", "artifact.md:step 3 — timeout"],
                 "recommendation": "Emit the audit event for a timeout",
             }],
         },
@@ -83,6 +83,7 @@ class HandoffPocTests(unittest.TestCase):
         result = json.loads(canonical.read_text(encoding="utf-8"))
         self.assertEqual(result["model"], "claude-opus-5-5")
         self.assertEqual(result["usage"]["input_tokens"], 100)
+        self.assertIn(" — ", result["findings"][0]["evidence_refs"][0])
         for index in range(1, 6):
             self.assertTrue((run_poc.HANDOFFS / f"HO-007.run-{index}.result.json").is_file())
 
@@ -107,6 +108,11 @@ class HandoffPocTests(unittest.TestCase):
         self.assertEqual(argv[argv.index("--tools") + 1], "Read,Glob,Grep")
         self.assertEqual(argv[argv.index("--permission-mode") + 1], "dontAsk")
         self.assertIn("--no-session-persistence", argv)
+
+    def test_claude_stdout_is_decoded_as_utf8_on_windows(self):
+        with mock.patch.object(run_poc.subprocess, "run", return_value=fake_success()) as process:
+            run_poc.run_command(["claude", "--version"], env={}, timeout=30)
+        self.assertEqual(process.call_args.kwargs["encoding"], "utf-8")
 
     def test_one_run_per_turn_resumes_without_repeating_paid_calls(self):
         out = io.StringIO()

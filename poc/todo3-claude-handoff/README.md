@@ -94,7 +94,8 @@ shell execution; `--permission-mode dontAsk` prevents an unattended prompt;
 `--no-session-persistence` prevents replaying prior conversation state.
 The Kilo **outer** Bash permission remains `ask`. CLI model and usage metadata
 are added to the structured result by the runner, rather than trusting the
-model to state its own identity.
+model to state its own identity. The runner explicitly decodes CLI output as
+UTF-8 on Windows so evidence references retain punctuation such as `—`.
 
 Official references: [CLI flags](https://code.claude.com/docs/en/cli-reference),
 [headless JSON/schema](https://code.claude.com/docs/en/headless),
