@@ -195,14 +195,55 @@ def invoke(executable: str, env: dict[str, str], timeout: int) -> subprocess.Com
     )
 
 
+def completed_runs() -> int:
+    """Count contiguous validated results; never silently overwrite a paid run."""
+    completed = 0
+    for index in range(1, 6):
+        path = HANDOFFS / f"{HANDOFF_ID}.run-{index}.result.json"
+        if not path.exists():
+            break
+        try:
+            result = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Malformed saved result: {path}") from exc
+        if not isinstance(result, dict) or (
+            result.get("handoff_id") != HANDOFF_ID
+            or result.get("status") != "COMPLETED"
+            or result.get("verdict_token") != "OPUS_MATERIAL_FINDINGS"
+            or "opus-5-5" not in str(result.get("model", "")).lower()
+            or not result.get("findings")
+        ):
+            raise ValueError(f"Invalid saved result: {path}; inspect before resuming")
+        completed += 1
+    if any(
+        (HANDOFFS / f"{HANDOFF_ID}.run-{index}.result.json").exists()
+        for index in range(completed + 2, 6)
+    ):
+        raise ValueError("Gap in saved results; inspect before resuming")
+    return completed
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--claude", default="claude", help="Claude Code CLI executable")
-    parser.add_argument("--runs", type=int, default=5, help="Independent live runs (default: 5)")
+    parser.add_argument("--runs", type=int, default=1, help="New calls this turn (default: 1)")
     parser.add_argument("--timeout", type=int, default=180, help="Seconds per call")
     args = parser.parse_args()
-    if args.runs != 5:
-        parser.error("TODO-3's adoption gate requires exactly five independent runs")
+    if not 1 <= args.runs <= 5:
+        parser.error("--runs must be between 1 and 5")
+    HANDOFFS.mkdir(parents=True, exist_ok=True)
+    try:
+        prior = completed_runs()
+    except ValueError as exc:
+        print(f"SAVED_RESULT_INVALID: {exc}", file=sys.stderr)
+        return 2
+    if prior == 5:
+        canonical = HANDOFFS / f"{HANDOFF_ID}.result.json"
+        if not canonical.exists():
+            last = HANDOFFS / f"{HANDOFF_ID}.run-5.result.json"
+            canonical.write_text(last.read_text(encoding="utf-8"), encoding="utf-8")
+        print("POC_RESULT: 5/5 valid runs (already complete; no new Claude call)")
+        return 0
     env = os.environ.copy()
     try:
         preflight(args.claude, env, min(args.timeout, 30))
@@ -210,13 +251,10 @@ def main() -> int:
         print(f"PREFLIGHT_FAILED: {exc}", file=sys.stderr)
         return 2
 
-    HANDOFFS.mkdir(parents=True, exist_ok=True)
-    for stale in HANDOFFS.glob(f"{HANDOFF_ID}*.result.json"):
-        stale.unlink()
     packet = HANDOFFS / f"{HANDOFF_ID}.md"
     packet.write_text((FIXTURE / "handoff_template.md").read_text(encoding="utf-8"), encoding="utf-8")
-    passed = 0
-    for index in range(1, args.runs + 1):
+    passed = prior
+    for index in range(prior + 1, min(5, prior + args.runs) + 1):
         try:
             call = invoke(args.claude, env, args.timeout)
             error_envelope = False
@@ -237,7 +275,7 @@ def main() -> int:
             output = HANDOFFS / f"{HANDOFF_ID}.run-{index}.result.json"
             output.write_text(json.dumps(complete, indent=2) + "\n", encoding="utf-8")
             passed += 1
-            print(f"Run {index}: VALID; model={model}; findings={len(result['findings'])}; result={output}")
+            print(f"Run {index}: VALID; model={model}; findings={len(result['findings'])}; result={output}", flush=True)
         except (ValueError, json.JSONDecodeError, subprocess.TimeoutExpired) as exc:
             print(f"Run {index}: INVALID_OR_TIMEOUT: {exc}")
             break
@@ -245,10 +283,10 @@ def main() -> int:
     if passed == args.runs:
         canonical = HANDOFFS / f"{HANDOFF_ID}.result.json"
         canonical.write_text(json.dumps(complete, indent=2) + "\n", encoding="utf-8")
-    print(f"POC_RESULT: {passed}/{args.runs} valid runs")
+    print(f"POC_RESULT: {passed}/5 valid runs", flush=True)
     print("Quota detection: simulate with test_poc.py; a live quota event is not required or induced.")
     print("Kilo Bash permission ask and Windows execution must be observed on your PC.")
-    return 0 if passed == args.runs else 1
+    return 0 if passed == min(5, prior + args.runs) else 1
 
 
 if __name__ == "__main__":

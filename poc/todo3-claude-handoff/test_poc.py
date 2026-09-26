@@ -5,7 +5,9 @@ import io
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
+from pathlib import Path
 from unittest import mock
 
 import run_poc
@@ -33,6 +35,15 @@ def fake_success() -> subprocess.CompletedProcess[str]:
 
 
 class HandoffPocTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.handoff_patch = mock.patch.object(run_poc, "HANDOFFS", Path(self.temp.name))
+        self.handoff_patch.start()
+
+    def tearDown(self):
+        self.handoff_patch.stop()
+        self.temp.cleanup()
+
     def test_subscription_routing_refuses_api_key_without_printing_value(self):
         with self.assertRaisesRegex(ValueError, "ANTHROPIC_API_KEY") as caught:
             run_poc.check_routing_environment({"ANTHROPIC_API_KEY": "secret-test-value"})
@@ -62,7 +73,7 @@ class HandoffPocTests(unittest.TestCase):
         with mock.patch.object(run_poc, "preflight"), mock.patch.object(
             run_poc, "invoke", return_value=fake_success()
         ) as invoke, mock.patch.object(
-            sys, "argv", ["run_poc.py"]
+            sys, "argv", ["run_poc.py", "--runs", "5"]
         ), contextlib.redirect_stdout(out):
             self.assertEqual(run_poc.main(), 0)
         self.assertEqual(invoke.call_count, 5)
@@ -81,7 +92,7 @@ class HandoffPocTests(unittest.TestCase):
         with mock.patch.object(run_poc, "preflight"), mock.patch.object(
             run_poc, "invoke", side_effect=[fake_success(), quota]
         ), mock.patch.object(
-            sys, "argv", ["run_poc.py"]
+            sys, "argv", ["run_poc.py", "--runs", "5"]
         ), contextlib.redirect_stdout(out):
             self.assertEqual(run_poc.main(), 1)
         self.assertIn("QUOTA_OR_RATE_LIMIT", out.getvalue())
@@ -96,6 +107,20 @@ class HandoffPocTests(unittest.TestCase):
         self.assertEqual(argv[argv.index("--tools") + 1], "Read,Glob,Grep")
         self.assertEqual(argv[argv.index("--permission-mode") + 1], "dontAsk")
         self.assertIn("--no-session-persistence", argv)
+
+    def test_one_run_per_turn_resumes_without_repeating_paid_calls(self):
+        out = io.StringIO()
+        with mock.patch.object(run_poc, "preflight"), mock.patch.object(
+            run_poc, "invoke", return_value=fake_success()
+        ) as invoke, mock.patch.object(
+            sys, "argv", ["run_poc.py"]
+        ), contextlib.redirect_stdout(out):
+            for _ in range(5):
+                self.assertEqual(run_poc.main(), 0)
+            self.assertEqual(run_poc.main(), 0)
+        self.assertEqual(invoke.call_count, 5)
+        self.assertIn("already complete; no new Claude call", out.getvalue())
+        self.assertTrue((run_poc.HANDOFFS / "HO-007.result.json").exists())
 
 
 if __name__ == "__main__":

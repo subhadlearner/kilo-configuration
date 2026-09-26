@@ -14,14 +14,18 @@ Nothing from Claude is treated as authority or applied to the source.
    is the subscription rather than an API key, gateway or cloud provider.
    `claude auth status` alone proves login, not billing route.
 2. From the checkout of this branch, open Kilo in VS Code and ask its Ask/Plan
-   agent to execute exactly this Bash command. Accept the normal Kilo Bash
-   permission **ask** when prompted (one explicit user-directed POC):
+   agent to execute exactly this Bash command **once per turn, five turns**.
+   Ask Kilo to set the Bash tool command timeout to **240000 ms** and accept
+   its permission **ask** for each invocation:
 
    ```bash
    py -3 poc/todo3-claude-handoff/run_poc.py
    ```
 
-   If `py` is unavailable in Git Bash, use `python` in its place. Do **not**
+   Each invocation saves one numbered result and prints `POC_RESULT: N/5`.
+   Re-running the same command resumes from the next number; it does not
+   repeat a saved call. If `py` is unavailable in Git Bash, use `python`.
+   Do **not**
    use `/adversarial-check` for this POC: v0.1 still routes that command to
    the in-Kilo provider/API. Observe and record whether Kilo prompted for
    Bash approval and whether the command returned to Kilo with its exit code.
@@ -35,7 +39,8 @@ Nothing from Claude is treated as authority or applied to the source.
 
 Each live run starts a new session and has its own CLI JSON envelope. Five
 calls use subscription allowance; run them only once for this decision. The
-script stops on the first failure. A successful result must report Opus in
+script stops on the first failure and preserves earlier numbered results.
+A successful result must report Opus 5.5 in
 CLI model metadata and identify the timeout audit violation with citations
 to both fixture sources.
 
@@ -67,6 +72,18 @@ result was refused, without recording the raw credential-bearing output.
 Adopt path 2 only when all gates pass. The offline simulated quota check proves
 the classifier, not the exact wording of every future Claude Code error. A
 failed gate keeps the in-Kilo API path and manual handoff available.
+
+## If Kilo says "Turn interrupted"
+
+Check `fixture/.kilo/handoffs/` for `HO-007.run-1.result.json` (and later
+numbers). A saved numbered result means that call finished even if Kilo did
+not display the final message; re-run the same command to resume. No numbered
+result means there is no validated result. Inspect the Kilo tool output and
+VS Code Output → Kilo Code for the timeout or exit code. Run `claude --version`
+and `claude auth status` in a normal VS Code terminal to separate Kilo execution
+from Claude setup. If a single call still exceeds Kilo's Bash timeout, run the
+script directly in the integrated terminal and let Kilo inspect the result;
+record that the Kilo Bash invocation gate itself remains unproven.
 
 ## Why these flags
 
