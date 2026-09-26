@@ -181,7 +181,7 @@ def invoke(executable: str, env: dict[str, str], timeout: int) -> subprocess.Com
     return run_command(
         [
             executable, "-p", prompt,
-            "--model", "opus",
+            "--model", "claude-opus-5-5",
             "--output-format", "json",
             "--json-schema", json.dumps(SCHEMA, separators=(",", ":")),
             "--tools", "Read,Glob,Grep",
@@ -231,8 +231,8 @@ def main() -> int:
                 break
             result, wrapper = parse_result(call.stdout)
             model, usage = sanitized_metadata(wrapper)
-            if "opus" not in model.lower():
-                raise ValueError(f"CLI did not report Opus as the model ({model})")
+            if "opus-5-5" not in model.lower():
+                raise ValueError(f"CLI did not report Opus 5.5 as the model ({model})")
             complete = {**result, "model": model, "usage": usage}
             output = HANDOFFS / f"{HANDOFF_ID}.run-{index}.result.json"
             output.write_text(json.dumps(complete, indent=2) + "\n", encoding="utf-8")

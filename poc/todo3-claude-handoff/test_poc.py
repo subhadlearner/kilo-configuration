@@ -92,7 +92,7 @@ class HandoffPocTests(unittest.TestCase):
             run_poc.invoke("claude", {}, 180)
         argv = command.call_args.args[0]
         self.assertEqual(argv[0:2], ["claude", "-p"])
-        self.assertEqual(argv[argv.index("--model") + 1], "opus")
+        self.assertEqual(argv[argv.index("--model") + 1], "claude-opus-5-5")
         self.assertEqual(argv[argv.index("--tools") + 1], "Read,Glob,Grep")
         self.assertEqual(argv[argv.index("--permission-mode") + 1], "dontAsk")
         self.assertIn("--no-session-persistence", argv)

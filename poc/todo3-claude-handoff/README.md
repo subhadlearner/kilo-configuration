@@ -71,7 +71,7 @@ failed gate keeps the in-Kilo API path and manual handoff available.
 ## Why these flags
 
 `--output-format json --json-schema` puts validated content in
-`structured_output`; `--model opus` selects the model for this run;
+`structured_output`; `--model claude-opus-5-5` pins the tracker model for this run;
 `--tools Read,Glob,Grep` and `--disallowedTools mcp__*` exclude mutation and
 shell execution; `--permission-mode dontAsk` prevents an unattended prompt;
 `--no-session-persistence` prevents replaying prior conversation state.
