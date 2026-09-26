@@ -1,0 +1,85 @@
+# TODO-3: Claude Code + Pro headless handoff POC
+
+This is a **disposable POC**, not production routing for `/adversarial-check`.
+It runs one bounded, deliberately flawed `ADVERSARIAL` fixture five times
+through Claude Code's `-p` mode, requests Opus, validates the JSON schema and
+the finding, and returns the result to `.kilo/handoffs/HO-007.result.json`.
+Nothing from Claude is treated as authority or applied to the source.
+
+## Run on Subhadeep's Windows PC from Kilo
+
+1. Install the Claude Code CLI, run `claude --version`, and sign in via
+   `claude auth login` with the Claude **Pro** account. In an interactive
+   `claude` session, check `/status` and confirm that the active credential
+   is the subscription rather than an API key, gateway or cloud provider.
+   `claude auth status` alone proves login, not billing route.
+2. From the checkout of this branch, open Kilo in VS Code and ask its Ask/Plan
+   agent to execute exactly this Bash command. Accept the normal Kilo Bash
+   permission **ask** when prompted (one explicit user-directed POC):
+
+   ```bash
+   py -3 poc/todo3-claude-handoff/run_poc.py
+   ```
+
+   If `py` is unavailable in Git Bash, use `python` in its place. Do **not**
+   use `/adversarial-check` for this POC: v0.1 still routes that command to
+   the in-Kilo provider/API. Observe and record whether Kilo prompted for
+   Bash approval and whether the command returned to Kilo with its exit code.
+3. The runner refuses a nonempty API key, bearer token, cloud-provider or
+   explicit OAuth-token environment variable. If it stops, remove only those
+   variables from this terminal and recheck `/status`. Never paste or log their
+   values. It also checks `claude auth status` before spending any model usage.
+4. Inspect the final `POC_RESULT: 5/5 valid runs` line and the canonical result
+   at `fixture/.kilo/handoffs/HO-007.result.json`. The five numbered results
+   are there too. The fixture's `.gitignore` excludes all handoff results.
+
+Each live run starts a new session and has its own CLI JSON envelope. Five
+calls use subscription allowance; run them only once for this decision. The
+script stops on the first failure. A successful result must report Opus in
+CLI model metadata and identify the timeout audit violation with citations
+to both fixture sources.
+
+## Failure and quota exercise without spending subscription allowance
+
+Run the offline checks before the live POC:
+
+```bash
+py -3 -m unittest discover -s poc/todo3-claude-handoff -p 'test_poc.py' -v
+```
+
+They simulate a 429/rate limit, malformed result and a complete 5/5 handoff.
+The runner classifies real CLI errors as `QUOTA_OR_RATE_LIMIT`, `AUTH_FAILURE`,
+`CLI_FAILURE`, or `MALFORMED_RESULT`; it does not silently switch to an API key
+or another model. We do not intentionally exhaust a real Pro quota. If a live
+quota event occurs, record its category, exit code and whether a partial
+result was refused, without recording the raw credential-bearing output.
+
+## Decision record to fill after the Windows run
+
+| Gate | Evidence | Result |
+|---|---|---|
+| Active credential is Pro subscription in Claude `/status` | observed locally | pending |
+| Kilo Bash permission `ask` prompts and returns exit status | observed locally | pending |
+| Five independent Opus runs return validated `structured_output` | 5 numbered result files | pending |
+| Quota/rate-limit output is detected | offline simulated 429 + live if encountered | pending |
+| Canonical JSON result is returned, without source edits | `HO-007.result.json` and `git status` | pending |
+
+Adopt path 2 only when all gates pass. The offline simulated quota check proves
+the classifier, not the exact wording of every future Claude Code error. A
+failed gate keeps the in-Kilo API path and manual handoff available.
+
+## Why these flags
+
+`--output-format json --json-schema` puts validated content in
+`structured_output`; `--model opus` selects the model for this run;
+`--tools Read,Glob,Grep` and `--disallowedTools mcp__*` exclude mutation and
+shell execution; `--permission-mode dontAsk` prevents an unattended prompt;
+`--no-session-persistence` prevents replaying prior conversation state.
+The Kilo **outer** Bash permission remains `ask`. CLI model and usage metadata
+are added to the structured result by the runner, rather than trusting the
+model to state its own identity.
+
+Official references: [CLI flags](https://code.claude.com/docs/en/cli-reference),
+[headless JSON/schema](https://code.claude.com/docs/en/headless),
+[authentication precedence](https://code.claude.com/docs/en/authentication),
+[Windows setup](https://code.claude.com/docs/en/setup).
